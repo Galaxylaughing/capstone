@@ -4,7 +4,7 @@ from django.test import TestCase
 from .models import User
 
 
-class PuppyTest(TestCase):
+class UserTest(TestCase):
     """ Test module for User model """
 
     def setUp(self):
