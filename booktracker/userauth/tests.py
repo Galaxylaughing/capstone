@@ -1,4 +1,7 @@
+from django.urls import reverse
 from django.test import TestCase
+from rest_framework.test import APITestCase
+from rest_framework import status
 
 # Create your tests here.
 from .models import User
@@ -52,3 +55,29 @@ class UserTest(TestCase):
         data = self.serializer.data
         self.assertIsInstance(
           data['id'], str)
+
+
+class LoginUserTest(APITestCase):
+    """ Test module for logging in a User """
+
+    def setUp(self):
+        """ create a user instance to login """
+        self.user = User.objects.create_user(
+            username='Caspar', password='acoolpassword')
+
+    def test_logging_in_existing_user_returns_user(self):
+        # get API response
+        url = reverse('login')
+        data = {'username': 'Caspar', 'password': 'acoolpassword'}
+        response = self.client.post(url, data, format='json')
+
+        # get data from database
+        user = User.objects.get(username='Caspar')
+        serializer = UserSerializer(user)
+
+        # assert
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_logging_in_new_user_returns_an_unauthorized_error(self):
+        """ do other stuff """
