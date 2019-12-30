@@ -125,3 +125,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# define which model to use for authentication
+AUTH_USER_MODEL = 'userauth.User'
