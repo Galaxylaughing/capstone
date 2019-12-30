@@ -80,4 +80,11 @@ class LoginUserTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_logging_in_new_user_returns_an_unauthorized_error(self):
-        """ do other stuff """
+        # get API response
+        url = reverse('login')
+        data = {'username': 'Newuser', 'password': 'newpassword'}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Account not found')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
