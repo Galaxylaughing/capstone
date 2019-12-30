@@ -17,6 +17,17 @@ class UserTest(TestCase):
         self.serializer = UserSerializer(instance=self.user)
         self.serializer_keys = ['id', 'username']
     
+    def test_user_is_created(self):
+        """ assert setup user was added """
+        self.assertEqual(User.objects.count(), 1)
+
+        """ create new user """
+        User.objects.create(
+            username="Zanzibar", password='anothercoolpassword')
+
+        """ assert count has changed """
+        self.assertEqual(User.objects.count(), 2)
+    
     def test_username_matches(self):
         user = self.user
         self.assertEqual(
