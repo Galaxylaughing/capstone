@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate
 
 from .models import User
 from .serializers import UserSerializer
+from .helper import validate_user_fields, stringify_errors
 
 
 # Create your views here.
@@ -39,15 +40,18 @@ def signup(request):
   create new user otherwise.
   """
 
-  username = request.data['username']
-  password = request.data['password']
+  fields = validate_user_fields(request.data)
+  print(fields)
+
+  username = fields['username']
+  password = fields['password']
 
   # filter() returns a QuerySet
   filteredUsers = User.objects.filter(username=username)
   # exists() returns True if the QuerySet contains any results, and False if not
   if filteredUsers.exists():
     return Response('Account already exists', status=status.HTTP_403_FORBIDDEN)
-  else:
+  elif username and password:
     # create new user
     new_user = User(username=username)
     new_user.set_password(request.data['password'])
@@ -57,3 +61,7 @@ def signup(request):
     # return the new user's data
     serializer = UserSerializer(new_user)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+  else:
+    errors = fields['errors']
+    stringified_errors = stringify_errors(errors)
+    return Response(stringified_errors, status=status.HTTP_400_BAD_REQUEST)

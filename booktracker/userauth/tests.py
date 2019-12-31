@@ -120,3 +120,23 @@ class SignUpUserTest(APITestCase):
         # assert
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_cannot_sign_up_user_without_username(self):
+        # get API response
+        url = reverse('signup')
+        data = {'password': 'acoolpassword'}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Error: username is missing')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # def test_cannot_sign_up_user_with_empty_username(self):
+    #     # get API response
+    #     url = reverse('signup')
+    #     data = {'username': '', 'password': 'acoolpassword'}
+    #     response = self.client.post(url, data, format='json')
+
+    #     # assert
+    #     self.assertEqual(response.data, 'Account already exists')
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
