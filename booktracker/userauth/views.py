@@ -41,8 +41,6 @@ def signup(request):
   """
 
   fields = validate_user_fields(request.data)
-  print(fields)
-
   username = fields['username']
   password = fields['password']
 

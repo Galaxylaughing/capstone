@@ -1,35 +1,23 @@
 def validate_user_fields(fields):
-    if 'username' in fields and 'password' in fields:
-        print(fields)
+    username = fields.get('username', None)
+    password = fields.get('password', None)
 
-        username = fields['username']
-        password = fields['password']
+    return_dict = {}
+    return_dict['errors'] = {}
 
-        return { 
-          'username': username, 
-          'password': password }
-
-    elif 'username' in fields:
-        return { 
-          'username': fields['username'],
-          'password': None,
-          "errors": {
-            "password": "password is missing"} }
-
-    elif 'password' in fields:
-        return { 
-          'username': None,
-          'password': fields['password'],
-          "errors": {
-            "username": "username is missing"} }
-
+    if username: # username exists
+        return_dict['username'] = username
     else:
-        return { 
-          'username': None,
-          'password': None,
-          "errors": {
-            "username": "username is missing", 
-            "password": "password is missing"} }
+        return_dict['username'] = None
+        return_dict['errors']['username'] = 'username is missing or empty'
+
+    if password: # password exists
+        return_dict['password'] = password
+    else:
+        return_dict['password'] = None
+        return_dict['errors']['password'] = 'password is missing or empty'
+
+    return return_dict
 
 
 def stringify_errors(errors):
@@ -38,12 +26,11 @@ def stringify_errors(errors):
 
   if count == 1:
     stringified += 'Error: '
-    for key in errors:
-      stringified += errors[key]
   else:
     stringified += 'Errors: '
-    for key in errors:
-      stringified += errors[key]
-      stringified += ", "
+
+  error_messages = errors.values()
+  joiner = ', '
+  stringified += joiner.join(error_messages)
 
   return stringified

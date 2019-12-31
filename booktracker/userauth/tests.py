@@ -128,15 +128,55 @@ class SignUpUserTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         # assert
-        self.assertEqual(response.data, 'Error: username is missing')
+        self.assertEqual(response.data, 'Error: username is missing or empty')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # def test_cannot_sign_up_user_with_empty_username(self):
-    #     # get API response
-    #     url = reverse('signup')
-    #     data = {'username': '', 'password': 'acoolpassword'}
-    #     response = self.client.post(url, data, format='json')
+    def test_cannot_sign_up_user_with_empty_username(self):
+        # get API response
+        url = reverse('signup')
+        data = {'username': '', 'password': 'acoolpassword'}
+        response = self.client.post(url, data, format='json')
 
-    #     # assert
-    #     self.assertEqual(response.data, 'Account already exists')
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # assert
+        self.assertEqual(response.data, 'Error: username is missing or empty')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_cannot_sign_up_user_without_password(self):
+        # get API response
+        url = reverse('signup')
+        data = {'username': 'Ducky'}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Error: password is missing or empty')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_sign_up_user_with_empty_password(self):
+        # get API response
+        url = reverse('signup')
+        data = {'username': 'Ducky', 'password': ''}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Error: password is missing or empty')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_sign_up_without_username_or_password(self):
+        # get API response
+        url = reverse('signup')
+        data = {}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Errors: username is missing or empty, password is missing or empty')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_sign_up_with_empty_username_and_password(self):
+        # get API response
+        url = reverse('signup')
+        data = {'username': '', 'password': ''}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Errors: username is missing or empty, password is missing or empty')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
