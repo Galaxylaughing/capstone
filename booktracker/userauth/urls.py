@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('login/', views.auth_login, name='login'),
+    path('signup/', views.signup, name='signup'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json'])

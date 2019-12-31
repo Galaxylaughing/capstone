@@ -65,7 +65,7 @@ class LoginUserTest(APITestCase):
         self.user = User.objects.create_user(
             username='Caspar', password='acoolpassword')
 
-    def test_logging_in_existing_user_returns_user(self):
+    def test_can_login_new_user(self):
         # get API response
         url = reverse('login')
         data = {'username': 'Caspar', 'password': 'acoolpassword'}
@@ -79,7 +79,7 @@ class LoginUserTest(APITestCase):
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_logging_in_new_user_returns_an_unauthorized_error(self):
+    def test_cannot_login_existing_user(self):
         # get API response
         url = reverse('login')
         data = {'username': 'Newuser', 'password': 'newpassword'}
@@ -88,3 +88,35 @@ class LoginUserTest(APITestCase):
         # assert
         self.assertEqual(response.data, 'Account not found')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class SignUpUserTest(APITestCase):
+    """ Test module for signing up a new User """
+
+    def test_cannot_sign_up_existing_user(self):
+        # create user
+        User.objects.create_user(
+            username='Caspar', password='acoolpassword')
+
+        # get API response
+        url = reverse('signup')
+        data = {'username': 'Caspar', 'password': 'acoolpassword'}
+        response = self.client.post(url, data, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Account already exists')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_can_sign_up_new_user(self):
+        # get API response
+        url = reverse('signup')
+        data = {'username': 'Ducky', 'password': 'verysecurepassword'}
+        response = self.client.post(url, data, format='json')
+
+        # get data from database
+        user = User.objects.get(username='Ducky')
+        serializer = UserSerializer(user)
+
+        # assert
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
