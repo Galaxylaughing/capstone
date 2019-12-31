@@ -180,3 +180,36 @@ class SignUpUserTest(APITestCase):
         # assert
         self.assertEqual(response.data, 'Errors: username is missing or empty, password is missing or empty')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutUserTest(APITestCase):
+    """ Test module for logging out a User """
+
+    def setUp(self):
+        # create a user instance
+        self.username = 'Caspar'
+        self.password = 'acoolpassword'
+        self.user = User.objects.create(
+          username=self.username, password=self.password)
+
+    def test_can_logout_a_user(self):
+        # login the user
+        self.client.force_login(self.user)
+
+        # get API response
+        url = reverse('logout')
+        response = self.client.get(url, format='json')
+
+        # assert
+        self.assertEqual(response.data, 'Successfully logged out')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_does_not_break_if_no_one_logged_in(self):
+        # don't log anyone in
+
+        # get API response
+        url = reverse('logout')
+        response = self.client.get(url, format='json')
+
+        # assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -63,3 +63,10 @@ def signup(request):
     errors = fields['errors']
     stringified_errors = stringify_errors(errors)
     return Response(stringified_errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def auth_logout(request):
+  """ Clears the session """
+  logout(request)
+  return Response('Successfully logged out', status=status.HTTP_200_OK)
