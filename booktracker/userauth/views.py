@@ -1,7 +1,8 @@
 from django.shortcuts import render
 
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from django.contrib.auth import login, logout
@@ -34,6 +35,7 @@ def auth_login(request, format=None):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
   """
   return 403 forbidden if user is already present.
@@ -55,7 +57,7 @@ def signup(request):
     new_user.set_password(request.data['password'])
     new_user.save()
     # login the new user
-    login(request, new_user)
+    # login(request, new_user)
     # return the new user's data
     serializer = UserSerializer(new_user)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -70,3 +72,8 @@ def auth_logout(request):
   """ Clears the session """
   logout(request)
   return Response('Successfully logged out', status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def helloworld(request):
+  return Response("Hello World", status=status.HTTP_200_OK)
