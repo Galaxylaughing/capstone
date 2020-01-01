@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'api',
     'userauth',
 ]
@@ -128,3 +129,10 @@ STATIC_URL = '/static/'
 
 # define which model to use for authentication
 AUTH_USER_MODEL = 'userauth.User'
+
+# set authentication scheme
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
