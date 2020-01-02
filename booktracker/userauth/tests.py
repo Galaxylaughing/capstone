@@ -2,6 +2,8 @@ from django.urls import reverse
 from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+from unittest import skip
 
 # Create your tests here.
 from .models import User
@@ -57,6 +59,7 @@ class UserTest(TestCase):
           data['id'], str)
 
 
+@skip("unused; using obtain_auth_token to login")
 class LoginUserTest(APITestCase):
     """ Test module for logging in a User """
 
@@ -186,30 +189,34 @@ class LogoutUserTest(APITestCase):
     """ Test module for logging out a User """
 
     def setUp(self):
-        # create a user instance
-        self.username = 'Caspar'
-        self.password = 'acoolpassword'
-        self.user = User.objects.create(
-          username=self.username, password=self.password)
+        # create a new user
+        username = 'LogoutTest'
+        password = 'password'
+        url = reverse('signup')
+        data = {'username': username, 'password': password}
+        response = self.client.post(url, data, format='json')
+        
+        # get user's token
+        url = reverse('get-auth-token')
+        data = {'username': username, 'password': password}
+        self.token_response = self.client.post(url, data, format='json')
 
-    def test_can_logout_a_user(self):
-        # login the user
-        self.client.force_login(self.user)
-
+    def test_can_logout_an_authenticated_user(self):
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token_response.data['token'])
         # get API response
         url = reverse('logout')
         response = self.client.get(url, format='json')
 
-        # assert
+        # # assert
         self.assertEqual(response.data, 'Successfully logged out')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_does_not_break_if_no_one_logged_in(self):
-        # don't log anyone in
-
+    def test_cannot_logout_unauthenticated_user(self):
+        # don't add token to header        
         # get API response
         url = reverse('logout')
         response = self.client.get(url, format='json')
 
         # assert
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
