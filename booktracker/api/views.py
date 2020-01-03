@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
-from .models import Book
+from .models import Book, BookAuthor #TODO: remove BookAuthor when I remove `if`
 from .serializers import BookSerializer
 
 from django.apps import apps
@@ -21,22 +21,28 @@ def get_books(request):
     # find all books associated with this user
     bookList = Book.objects.filter(user=requestUser)
 
-    # allBooks = Book.objects.all()
-    serializer = BookSerializer(bookList, many=True)
-    # [
-    #   {
-    #       'title': 'First Book',
-    #       'authors': [
-    #           'Jane Doe',
-    #           'John Doe'
-    #       ]
-    #   }, 
-    #   {
-    #       'title': 'Second Book',
-    #       'authors': [
-    #           'Jane Doe'
-    #       ]
-    #   }
-    # ]
+    # TODO: remove; used for testing XCODE
+    if bookList.count() == 0:
+        firstBook = Book.objects.create(
+            title="First Book", user=requestUser)
+        BookAuthor.objects.create(
+            author_name="John Doe", book=firstBook)
+        BookAuthor.objects.create(
+            author_name="Jane Doe", book=firstBook)
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        secondBook = Book.objects.create(
+            title="Second Book", user=requestUser)
+        BookAuthor.objects.create(
+            author_name="Jane Doe", book=secondBook)
+
+        thirdBook = Book.objects.create(
+            title="Third Book", user=requestUser)
+        BookAuthor.objects.create(
+            author_name="M.K. Doe", book=thirdBook)
+
+    serializer = BookSerializer(bookList, many=True)
+    # add wrapper key
+    json = {}
+    json["books"] = serializer.data
+
+    return Response(json, status=status.HTTP_200_OK)

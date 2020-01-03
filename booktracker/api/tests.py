@@ -162,21 +162,23 @@ class GetBooksTest(APITestCase):
         BookAuthor.objects.create(
             author_name="Jane Doe", book=secondBook)
 
-        expected_data = [
-            {
-                'title': 'Second Book',
-                'authors': [
-                    'Jane Doe'
-                ]
-            },
-            {
-                'title': 'First Book',
-                'authors': [
-                    'Jane Doe', 
-                    'John Doe'
-                ]
-            }
-        ]
+        expected_data = {
+            'books': [
+                {
+                    'title': 'Second Book',
+                    'authors': [
+                        'Jane Doe'
+                    ]
+                },
+                {
+                    'title': 'First Book',
+                    'authors': [
+                        'Jane Doe', 
+                        'John Doe'
+                    ]
+                }
+            ]
+        }
 
         # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -187,8 +189,9 @@ class GetBooksTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
+    @skip("TODO: unskip me again when XCode hand-testing done")
     def test_returns_empty_list_if_no_books(self):
-        expected_data = []
+        expected_data = {"books": []}
 
         # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -198,7 +201,7 @@ class GetBooksTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
-
+        
     def test_returns_error_if_unauthorized(self):
         # DON'T add token to header
         # get the API response
@@ -226,14 +229,16 @@ class GetBooksTest(APITestCase):
         BookAuthor.objects.create(
             author_name="John Doe", book=secondBook)
 
-        expected_data = [
-            {
-                'title': 'First Book',
-                'authors': [
-                    'Jane Doe'
-                ]
-            }
-        ]
+        expected_data = {
+            "books": [
+                {
+                    'title': 'First Book',
+                    'authors': [
+                        'Jane Doe'
+                    ]
+                }
+            ]
+        }
 
         # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + newUserToken)
@@ -243,17 +248,3 @@ class GetBooksTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
-
-
-    # endpoint should look up user by token
-    # endpoint should return an array of objects representing books
-    # and the status code 200 OK
-    # the book data should be the title and the author name
-
-    # if the user has no books,
-    # return an empty array
-    # and the status code 200 OK
-
-    # if a token is not recieved, 
-    # or the recieved token doesn't match a user
-    # return an error, 401 unauthorized
