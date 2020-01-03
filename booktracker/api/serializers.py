@@ -17,8 +17,8 @@ class BookAuthorSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     """ serializer for the Book model """
 
-    bookauthor_set = serializers.StringRelatedField(many=True)
+    authors = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Book
-        fields = ['title', 'bookauthor_set']
+        fields = ['title', 'authors']

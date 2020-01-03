@@ -95,14 +95,14 @@ class SerializerTests(TestCase):
         expected_data = [
             {
                 'title': 'First Book',
-                'bookauthor_set': [
+                'authors': [
                     'Jane Doe',
                     'John Doe'
                 ]
             }, 
             {
                 'title': 'Second Book',
-                'bookauthor_set': [
+                'authors': [
                     'Jane Doe'
                 ]
             }

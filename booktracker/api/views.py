@@ -20,14 +20,14 @@ def get_books(request):
     # [
     #   {
     #       'title': 'First Book',
-    #       'bookauthor_set': [
+    #       'authors': [
     #           'Jane Doe',
     #           'John Doe'
     #       ]
     #   }, 
     #   {
     #       'title': 'Second Book',
-    #       'bookauthor_set': [
+    #       'authors': [
     #           'Jane Doe'
     #       ]
     #   }
