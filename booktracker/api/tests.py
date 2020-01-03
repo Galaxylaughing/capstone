@@ -96,14 +96,14 @@ class SerializerTests(TestCase):
             {
                 'title': 'First Book',
                 'bookauthor_set': [
-                    {'author_name': 'Jane Doe'},
-                    {'author_name': 'John Doe'}
+                    'Jane Doe',
+                    'John Doe'
                 ]
             }, 
             {
                 'title': 'Second Book',
                 'bookauthor_set': [
-                    {'author_name': 'Jane Doe'}
+                    'Jane Doe'
                 ]
             }
         ]
@@ -111,36 +111,26 @@ class SerializerTests(TestCase):
         bookList = Book.objects.all()
         serializer = BookSerializer(bookList, many=True)
 
-        # print(serializer.data)
-
         self.assertEqual(serializer.data, expected_data)
 
     def test_bookauthorserializer_returns_expected_data(self):
         expected_data = [
             { 
                 'author_name': 'John Doe',
-                # 'book': {
-                #     'title': 'First Book'
-                # }
+                'book': 'First Book'
             },
             {
                 'author_name': 'Jane Doe',
-                # 'book': {
-                #     'title': 'First Book'
-                # }
+                'book': 'First Book'
             },
             { 
                 'author_name': 'Jane Doe',
-                # 'book': {
-                #     'title': 'Second Book'
-                # }
+                'book': 'Second Book'
             }
         ]
 
         bookauthorList = BookAuthor.objects.all()
         serializer = BookAuthorSerializer(bookauthorList, many=True)
-
-        # print(serializer.data)
 
         self.assertEqual(serializer.data, expected_data)
 
