@@ -7,8 +7,8 @@ from unittest import skip
 
 
 # Create your tests here.
-from .models import Book
-from .models import BookAuthor
+from .models import Book, BookAuthor
+from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
 User = apps.get_model('userauth','User')
@@ -72,6 +72,64 @@ class BookAuthorTests(TestCase):
         self.assertEqual(str(book_author), author_name)
 
 
+class SerializerTests(TestCase):
+    """ test module for BookSerializer """
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username='Bertie', password='password')
+
+        firstBook = Book.objects.create(
+            title="First Book", user=self.user)
+        secondBook = Book.objects.create(
+            title="Second Book", user=self.user)
+
+        BookAuthor.objects.create(
+            author_name="John Doe", book=firstBook)
+        BookAuthor.objects.create(
+            author_name="Jane Doe", book=secondBook)
+
+    def test_bookserializer_returns_expected_data(self):
+        expected_data = [
+            {
+                'title': 'First Book',
+                # 'author': 'John Doe'
+            }, 
+            {
+                'title': 'Second Book',
+                # 'author': 'Jane Doe'
+            }
+        ]
+
+        bookList = Book.objects.all()
+        serializer = BookSerializer(bookList, many=True)
+
+        self.assertEqual(serializer.data, expected_data)
+
+    def test_bookauthorserializer_returns_expected_data(self):
+        expected_data = [
+            { 
+                'author_name': 'John Doe',
+                'book': {
+                    'title': 'First Book'
+                }
+            },
+            { 
+                'author_name': 'Jane Doe',
+                'book': {
+                    'title': 'Second Book'
+                }
+            }
+        ]
+
+        bookauthorList = BookAuthor.objects.all()
+        serializer = BookAuthorSerializer(bookauthorList, many=True)
+
+        # print(serializer.data)
+
+        self.assertEqual(serializer.data, expected_data)
+
+
 class GetBooksTest(APITestCase):
     """ Test module for getting a list of a User's books """
 
@@ -84,15 +142,34 @@ class GetBooksTest(APITestCase):
         # get the user's token
         self.token = str(self.user.auth_token)
 
-    @skip("skip")
     def test_can_access_a_users_books(self):
         # give the user some books
-        Book.objects.create(
+        firstBook = Book.objects.create(
             title="First Book", user=self.user)
-        Book.objects.create(
+        secondBook = Book.objects.create(
             title="Second Book", user=self.user)
 
-        print(self.token)
+        # give the books some authors
+        BookAuthor.objects.create(
+            author_name="John Doe", book=firstBook)
+        BookAuthor.objects.create(
+            author_name="Jane Doe", book=secondBook)
+
+        expected_data = [
+            {
+                'title': 'First Book',
+                # 'author': 'John Doe'
+            }, 
+            {
+                'title': 'Second Book',
+                # 'author': 'Jane Doe'
+            }
+        ]
+
+        # print("user has", self.user.book_set.count())
+        print("firstbook has", firstBook.bookauthor_set.count())
+        print('firstbook', firstBook.bookauthor_set.all())
+        print("secondbook has", secondBook.bookauthor_set.count())
 
         # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -101,6 +178,7 @@ class GetBooksTest(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
 
 
     # endpoint should require a user's token
