@@ -9,6 +9,9 @@ from unittest import skip
 from .models import User
 from .serializers import UserSerializer
 
+from django.apps import apps
+Book = apps.get_model('api', 'Book')
+
 
 class UserTest(TestCase):
     """ Test module for User model """
@@ -57,6 +60,36 @@ class UserTest(TestCase):
         data = self.serializer.data
         self.assertIsInstance(
           data['id'], str)
+
+class UserBookRelationshipTest(TestCase):
+
+    def setUp(self):
+        # create a user instance
+        self.user = User.objects.create(
+          username='Caspar', password='acoolpassword')
+
+    def test_can_have_a_book(self):
+        expectedCount = self.user.book_set.count() + 1
+
+        book = Book.objects.create(
+            title="Test Book", user=self.user)
+
+        userBooks = self.user.book_set
+        self.assertEqual(userBooks.count(), expectedCount)
+
+        bookUser = book.user
+        self.assertEqual(bookUser.username, self.user.username)
+
+    def test_can_have_many_books(self):
+        expectedCount = self.user.book_set.count() + 2
+
+        Book.objects.create(
+            title="Test Book", user=self.user)
+        Book.objects.create(
+            title="Other Test Book", user=self.user)
+
+        userBooks = self.user.book_set
+        self.assertEqual(userBooks.count(), expectedCount)
 
 
 @skip("unused; using obtain_auth_token to login")
