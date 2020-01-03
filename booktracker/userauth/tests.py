@@ -61,6 +61,7 @@ class UserTest(TestCase):
         self.assertIsInstance(
           data['id'], str)
 
+
 class UserBookRelationshipTest(TestCase):
 
     def setUp(self):
@@ -223,20 +224,17 @@ class LogoutUserTest(APITestCase):
 
     def setUp(self):
         # create a new user
-        username = 'LogoutTest'
+        username = 'Logout Test'
         password = 'password'
-        url = reverse('signup')
-        data = {'username': username, 'password': password}
-        response = self.client.post(url, data, format='json')
+        self.user = User.objects.create(
+            username=username, password=password)
         
         # get user's token
-        url = reverse('get-auth-token')
-        data = {'username': username, 'password': password}
-        self.token_response = self.client.post(url, data, format='json')
+        self.token = str(self.user.auth_token)
 
     def test_can_logout_an_authenticated_user(self):
         # add token to header
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token_response.data['token'])
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         # get API response
         url = reverse('logout')
         response = self.client.get(url, format='json')

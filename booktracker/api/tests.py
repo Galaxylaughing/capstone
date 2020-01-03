@@ -1,9 +1,9 @@
-# from django.urls import reverse
+from django.urls import reverse
 from django.test import TestCase
-# from rest_framework.test import APITestCase
-# from rest_framework import status
-# from rest_framework.authtoken.models import Token
-# from unittest import skip
+from rest_framework.test import APITestCase
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from unittest import skip
 
 
 # Create your tests here.
@@ -70,3 +70,49 @@ class BookAuthorTests(TestCase):
             author_name=author_name, book=self.book)
         
         self.assertEqual(str(book_author), author_name)
+
+
+class GetBooksTest(APITestCase):
+    """ Test module for getting a list of a User's books """
+
+    def setUp(self):
+        # create a user
+        username = 'Bertie'
+        password = 'password'
+        self.user = User.objects.create(
+            username=username, password=password)
+        # get the user's token
+        self.token = str(self.user.auth_token)
+
+    @skip("skip")
+    def test_can_access_a_users_books(self):
+        # give the user some books
+        Book.objects.create(
+            title="First Book", user=self.user)
+        Book.objects.create(
+            title="Second Book", user=self.user)
+
+        print(self.token)
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('get_books')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+    # endpoint should require a user's token
+    # endpoint should look up user by token
+    # endpoint should return an array of objects representing books
+    # and the status code 200 OK
+    # the book data should be the title and the author name
+
+    # if the user has no books,
+    # return an empty array
+    # and the status code 200 OK
+
+    # if a token is not recieved, 
+    # or the recieved token doesn't match a user
+    # return an error, 401 unauthorized
