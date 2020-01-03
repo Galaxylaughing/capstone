@@ -147,7 +147,6 @@ class GetBooksTest(APITestCase):
         # get the user's token
         self.token = str(self.user.auth_token)
 
-    @skip("skip")
     def test_can_access_a_users_books(self):
         # give the user some books
         firstBook = Book.objects.create(
@@ -165,19 +164,19 @@ class GetBooksTest(APITestCase):
 
         expected_data = [
             {
-                'title': 'First Book',
-                'authors': {'John Doe', 'Jane Doe'}
-            }, 
-            {
                 'title': 'Second Book',
-                'authors': {'Jane Doe'}
+                'authors': [
+                    'Jane Doe'
+                ]
+            },
+            {
+                'title': 'First Book',
+                'authors': [
+                    'Jane Doe', 
+                    'John Doe'
+                ]
             }
         ]
-
-        # print("user has", self.user.book_set.count())
-        # print("firstbook has", firstBook.bookauthor_set.count())
-        print('firstbook', firstBook.bookauthor_set.all())
-        # print("secondbook has", secondBook.bookauthor_set.count())
 
         # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -188,8 +187,64 @@ class GetBooksTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
+    def test_returns_empty_list_if_no_books(self):
+        expected_data = []
 
-    # endpoint should require a user's token
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('get_books')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+    def test_returns_error_if_unauthorized(self):
+        # DON'T add token to header
+        # get the API response
+        url = reverse('get_books')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_can_access_a_specific_users_books(self):
+        # create a new user
+        newUser = User.objects.create(
+            username='Caspar', password='password')
+        # get the user's token
+        newUserToken = str(newUser.auth_token)
+
+        # give the new user a book
+        firstBook = Book.objects.create(
+            title="First Book", user=newUser)
+        BookAuthor.objects.create(
+            author_name="Jane Doe", book=firstBook)
+
+        # give the setup user a book
+        secondBook = Book.objects.create(
+            title="Second Book", user=self.user)
+        BookAuthor.objects.create(
+            author_name="John Doe", book=secondBook)
+
+        expected_data = [
+            {
+                'title': 'First Book',
+                'authors': [
+                    'Jane Doe'
+                ]
+            }
+        ]
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + newUserToken)
+        # get the API response
+        url = reverse('get_books')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+
     # endpoint should look up user by token
     # endpoint should return an array of objects representing books
     # and the status code 200 OK
