@@ -16,5 +16,14 @@ User = apps.get_model('userauth','User')
 def get_books(request):
     bookList = Book.objects.all()
     serializer = BookSerializer(bookList, many=True)
+    bookData = serializer.data
+    # [
+    #   {
+    #       'title': 'First Book',
+    #   }, 
+    #   {
+    #       'title': 'Second Book',
+    #   }
+    # ]
 
     return Response(serializer.data, status=status.HTTP_200_OK)
