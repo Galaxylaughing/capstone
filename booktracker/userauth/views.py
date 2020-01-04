@@ -70,11 +70,12 @@ def signup(request):
     return Response(stringified_errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def auth_logout(request):
-  """ Clears the session """
-  logout(request)
-  return Response('Successfully logged out', status=status.HTTP_200_OK)
+# (unused; now using Token Authentication)
+# @api_view(['GET'])
+# def auth_logout(request):
+#   """ Clears the session """
+#   logout(request)
+#   return Response('Successfully logged out', status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
