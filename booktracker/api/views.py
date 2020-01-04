@@ -43,9 +43,30 @@ def get_books(request):
         # alphabetical:
         # Apple, Orange, Squash
 
+    # serialize the book list
     serializer = BookSerializer(bookList, many=True)
     # add wrapper key
     json = {}
     json["books"] = serializer.data
 
     return Response(json, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_book(request, book_id):
+    # find book by ID; use .filter to avoid throwing error if not found
+    book = Book.objects.filter(id=book_id)
+
+    if book.count() > 0:
+        # serialize the book
+        serializer = BookSerializer(book[0])
+        # add wrapper key
+        json = {}
+        json["book"] = serializer.data
+
+        return Response(json, status=status.HTTP_200_OK)
+    
+    # else
+    json = {}
+    json["error"] = "No book found with the ID: %s" %(book_id)
+    return Response(json, status=status.HTTP_400_BAD_REQUEST)
