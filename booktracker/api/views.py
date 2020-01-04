@@ -13,47 +13,73 @@ User = apps.get_model('userauth','User')
 
 
 # Create your views here.
+@api_view(["GET", "POST"])
+def books(request):
+    if request.method == 'GET':
+        # get user from token passed into request header
+        requestUser = User.objects.get(auth_token__key=request.auth)
+
+        # find all books associated with this user
+        bookList = Book.objects.filter(user=requestUser)
+
+        # TODO: remove; used for testing XCODE
+        if bookList.count() == 0:
+            firstBook = Book.objects.create(
+                title="Orange Book", user=requestUser)
+            BookAuthor.objects.create(
+                author_name="John Doe", book=firstBook)
+            BookAuthor.objects.create(
+                author_name="Jane Doe", book=firstBook)
+
+            secondBook = Book.objects.create(
+                title="Squash Book", user=requestUser)
+            BookAuthor.objects.create(
+                author_name="Jane Doe", book=secondBook)
+
+            thirdBook = Book.objects.create(
+                title="Apple Book", user=requestUser)
+            BookAuthor.objects.create(
+                author_name="M.K. Doe", book=thirdBook)
+
+            # alphabetical:
+            # Apple, Orange, Squash
+
+        # serialize the book list
+        serializer = BookSerializer(bookList, many=True)
+        # add wrapper key
+        json = {}
+        json["books"] = serializer.data
+
+        return Response(json, status=status.HTTP_200_OK)
+
+    elif request.method == "POST":
+        if 'title' in request.data and 'authors' in request.data:
+            # make new book
+            title = request.data['title']
+            requestUser = User.objects.get(
+                auth_token__key=request.auth)
+            newBook = Book.objects.create(
+                title=title, user=requestUser)
+
+            # make new authors
+            authors = request.data['authors']
+            for author in authors:
+                BookAuthor.objects.create(
+                    author_name=author, book=newBook)
+
+            # create response json
+            serializer = BookSerializer(newBook)
+            json = {}
+            json['book'] = serializer.data
+
+            return Response(json, status=status.HTTP_201_CREATED)
+        else:
+            error_message = {"error": "Invalid book parameters"}
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(["GET"])
-def get_books(request):
-    # get user from token passed into request header
-    requestUser = User.objects.get(auth_token__key=request.auth)
-
-    # find all books associated with this user
-    bookList = Book.objects.filter(user=requestUser)
-
-    # TODO: remove; used for testing XCODE
-    if bookList.count() == 0:
-        firstBook = Book.objects.create(
-            title="Orange Book", user=requestUser)
-        BookAuthor.objects.create(
-            author_name="John Doe", book=firstBook)
-        BookAuthor.objects.create(
-            author_name="Jane Doe", book=firstBook)
-
-        secondBook = Book.objects.create(
-            title="Squash Book", user=requestUser)
-        BookAuthor.objects.create(
-            author_name="Jane Doe", book=secondBook)
-
-        thirdBook = Book.objects.create(
-            title="Apple Book", user=requestUser)
-        BookAuthor.objects.create(
-            author_name="M.K. Doe", book=thirdBook)
-
-        # alphabetical:
-        # Apple, Orange, Squash
-
-    # serialize the book list
-    serializer = BookSerializer(bookList, many=True)
-    # add wrapper key
-    json = {}
-    json["books"] = serializer.data
-
-    return Response(json, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-def get_book(request, book_id):
+def book(request, book_id):
     # find book by ID; use .filter to avoid throwing error if not found
     book = Book.objects.filter(id=book_id)
 
