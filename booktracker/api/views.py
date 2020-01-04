@@ -24,21 +24,24 @@ def get_books(request):
     # TODO: remove; used for testing XCODE
     if bookList.count() == 0:
         firstBook = Book.objects.create(
-            title="First Book", user=requestUser)
+            title="Orange Book", user=requestUser)
         BookAuthor.objects.create(
             author_name="John Doe", book=firstBook)
         BookAuthor.objects.create(
             author_name="Jane Doe", book=firstBook)
 
         secondBook = Book.objects.create(
-            title="Second Book", user=requestUser)
+            title="Squash Book", user=requestUser)
         BookAuthor.objects.create(
             author_name="Jane Doe", book=secondBook)
 
         thirdBook = Book.objects.create(
-            title="Third Book", user=requestUser)
+            title="Apple Book", user=requestUser)
         BookAuthor.objects.create(
             author_name="M.K. Doe", book=thirdBook)
+
+        # alphabetical:
+        # Apple, Orange, Squash
 
     serializer = BookSerializer(bookList, many=True)
     # add wrapper key

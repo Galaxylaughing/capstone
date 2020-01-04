@@ -79,21 +79,24 @@ class SerializerTests(TestCase):
         self.user = User.objects.create(
             username='Bertie', password='password')
 
-        firstBook = Book.objects.create(
+        self.firstBook = Book.objects.create(
             title="First Book", user=self.user)
-        secondBook = Book.objects.create(
+        self.secondBook = Book.objects.create(
             title="Second Book", user=self.user)
 
         BookAuthor.objects.create(
-            author_name="John Doe", book=firstBook)
+            author_name="John Doe", book=self.firstBook)
         BookAuthor.objects.create(
-            author_name='Jane Doe', book=firstBook)
+            author_name='Jane Doe', book=self.firstBook)
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=secondBook)
+            author_name="Jane Doe", book=self.secondBook)
 
     def test_bookserializer_returns_expected_data(self):
+        firstId = self.firstBook.id
+        secondId = self.secondBook.id
         expected_data = [
             {
+                'id': firstId,
                 'title': 'First Book',
                 'authors': [
                     'Jane Doe',
@@ -101,6 +104,7 @@ class SerializerTests(TestCase):
                 ]
             }, 
             {
+                'id': secondId,
                 'title': 'Second Book',
                 'authors': [
                     'Jane Doe'
@@ -162,15 +166,19 @@ class GetBooksTest(APITestCase):
         BookAuthor.objects.create(
             author_name="Jane Doe", book=secondBook)
 
+        firstId = firstBook.id
+        secondId = secondBook.id
         expected_data = {
             'books': [
                 {
+                    'id': secondId,
                     'title': 'Second Book',
                     'authors': [
                         'Jane Doe'
                     ]
                 },
                 {
+                    'id': firstId,
                     'title': 'First Book',
                     'authors': [
                         'Jane Doe', 
@@ -229,9 +237,11 @@ class GetBooksTest(APITestCase):
         BookAuthor.objects.create(
             author_name="John Doe", book=secondBook)
 
+        firstId = firstBook.id
         expected_data = {
             "books": [
                 {
+                    'id': firstId,
                     'title': 'First Book',
                     'authors': [
                         'Jane Doe'
