@@ -89,7 +89,7 @@ def books(request):
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "DELETE"])
+@api_view(["GET", "DELETE", "PUT"])
 @permission_classes([IsAuthenticated])
 def book(request, book_id):
     if request.method == 'GET':
@@ -140,3 +140,51 @@ def book(request, book_id):
             "error": "No book found with the ID: %s" %(book_id)
         }
         return Response(json, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "PUT":
+        # print("\nPATCHING\n", request.body)
+        # print("LISTS", request.POST.lists, "\n")
+        # print("TITLES", request.POST.getlist('title'), "\n")
+        # print("AUTHORS", request.POST.getlist('author'), "\n")
+
+        # find book by ID; use .filter to avoid throwing error if not found
+        book = Book.objects.filter(id=book_id)[0]
+
+        # set new title if there is one
+        new_titles = request.POST.getlist('title')
+        if len(new_titles) > 0:
+            book.title = new_titles[0]
+
+        # update authors if an author key is received
+        if "author" in request.data:
+            # check existing authors against input
+            new_authors = request.POST.getlist('author')
+            existing_authors = BookAuthor.objects.filter(book=book)
+            for bookauthor in existing_authors:
+                # check if new input contains this author name
+                existing_author_name = bookauthor.author_name
+
+                if existing_author_name in new_authors:
+                    # remove this author from new_authors
+                    new_authors.remove(existing_author_name)
+                else:
+                    # remove this bookauthor entry
+                    bookauthor.delete()
+
+            # set new authors
+            for author_name in new_authors:
+                BookAuthor.objects.create(
+                    author_name=author_name, book=book)
+
+        # save updated book
+        book.save()
+
+        # serialize updated book
+        updated_book = Book.objects.filter(id=book_id)
+        # serialize the book
+        serializer = BookSerializer(updated_book[0])
+        # add wrapper key
+        json = {
+            "books": [serializer.data]
+        }
+        return Response(json, status=status.HTTP_200_OK)
