@@ -1,7 +1,8 @@
 from django.shortcuts import render
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
@@ -47,16 +48,17 @@ def books(request):
         # serialize the book list
         serializer = BookSerializer(bookList, many=True)
         # add wrapper key
-        json = {}
-        json["books"] = serializer.data
+        json = {
+            'books': serializer.data
+        }
 
         return Response(json, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
-        print("\nPOSTING\n", request.body)
-        print("LISTS", request.POST.lists, "\n")
-        print("TITLES", request.POST.getlist('title'), "\n")
-        print("AUTHORS", request.POST.getlist('author'), "\n")
+        # print("\nPOSTING\n", request.body)
+        # print("LISTS", request.POST.lists, "\n")
+        # print("TITLES", request.POST.getlist('title'), "\n")
+        # print("AUTHORS", request.POST.getlist('author'), "\n")
 
         if 'title' in request.data and 'author' in request.data:
             # make new book
@@ -87,21 +89,43 @@ def books(request):
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["GET", "DELETE"])
+@permission_classes([IsAuthenticated])
 def book(request, book_id):
-    # find book by ID; use .filter to avoid throwing error if not found
-    book = Book.objects.filter(id=book_id)
+    if request.method == 'GET':
+        # find book by ID; use .filter to avoid throwing error if not found
+        book = Book.objects.filter(id=book_id)
 
-    if book.count() > 0:
-        # serialize the book
-        serializer = BookSerializer(book[0])
-        # add wrapper key
-        json = {}
-        json["book"] = serializer.data
+        if book.count() > 0:
+            # serialize the book
+            serializer = BookSerializer(book[0])
+            # add wrapper key
+            json = {}
+            json["book"] = serializer.data
 
-        return Response(json, status=status.HTTP_200_OK)
-    
-    # else
-    json = {}
-    json["error"] = "No book found with the ID: %s" %(book_id)
-    return Response(json, status=status.HTTP_400_BAD_REQUEST)
+            return Response(json, status=status.HTTP_200_OK)
+        
+        # else
+        json = {
+            "error": "No book found with the ID: %s" %(book_id)
+        }
+        return Response(json, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        # find book by ID; use .filter to avoid throwing error if not found
+        filteredBook = Book.objects.filter(id=book_id)
+
+        if filteredBook.count() > 0:
+            book = filteredBook[0]
+            serializer = BookSerializer(book)
+            json = {
+                "book": serializer.data
+            }
+            book.delete()
+            return Response(json, status=status.HTTP_200_OK)
+        
+        # else
+        json = {
+            "error": "No book found with the ID: %s" %(book_id)
+        }
+        return Response(json, status=status.HTTP_400_BAD_REQUEST)

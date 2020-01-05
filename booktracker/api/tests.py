@@ -349,13 +349,6 @@ class PostBookTest(APITestCase):
     def test_can_add_a_valid_book(self):
         # make some post parameters
         title = 'New Book With Unique Title'
-        # data = {
-        #     'title': title,
-        #     'author': (
-        #         'New Author',
-        #         'Other Author'
-        #     )
-        # }
         data = f'title={title}&author=New Author&author=Other Author'
 
         # set request header
@@ -363,7 +356,6 @@ class PostBookTest(APITestCase):
         # get url
         url = reverse('books')
         # make request
-        # response = self.client.post(url, data, format='json')
         response = self.client.post(url, data, content_type='application/x-www-form-urlencoded')
 
         # find book in database
@@ -385,42 +377,29 @@ class PostBookTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, expected_data)
 
-    @skip
     def test_cannot_add_a_book_without_authentication(self):
         # make some post parameters
         title = 'New Book With Unique Title'
-        data = {
-            'title': title,
-            'author': [
-                'New Author',
-                'Other Author'
-            ]
-        }
+        data = f'title={title}&author=New Author&author=Other Author'
 
         # DON'T request header
         # get url
         url = reverse('books')
         # make request
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, content_type='application/x-www-form-urlencoded')
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         
-    @skip
     def test_cannot_add_invalid_book(self):
         # make some invalid post parameters
-        data = {
-            'author': [
-                'New Author',
-                'Other Author'
-            ]
-        }
+        data = f'author=New Author&author=Other Author'
 
         # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         # get url
         url = reverse('books')
         # make request
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, content_type='application/x-www-form-urlencoded')
 
         expected_error = {
             "error": "Invalid book parameters"
@@ -428,3 +407,66 @@ class PostBookTest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, expected_error)
+
+
+class DeleteBookTests(APITestCase):
+    """ test module for deleting a book """
+
+    def setUp(self):
+        # create a user
+        username = 'Bertie'
+        password = 'password'
+        self.user = User.objects.create(
+            username=username, password=password)
+        # get the user's token
+        self.token = str(self.user.auth_token)
+        # give the user a book
+        self.title = "First Book"
+        self.firstBook = Book.objects.create(
+            title=self.title, user=self.user)
+        # give the book an author
+        self.author = "Jane Doe"
+        BookAuthor.objects.create(
+            author_name=self.author, book=self.firstBook)
+
+    def test_can_delete_a_book(self):
+        firstId = self.firstBook.id
+        firstTitle = self.title
+        firstAuthor = self.author
+        expected_data = {
+            'book': {
+                'id': firstId,
+                'title': firstTitle,
+                'authors': [
+                    firstAuthor
+                ]
+            }
+        }
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('book', kwargs={'book_id': firstId})
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # check that I can't find it in database
+        filteredBooks = Book.objects.filter(id=firstId)
+        self.assertEqual(filteredBooks.count(), 0)
+
+    def test_returns_error_if_invalid_bookid(self):
+        fakeId = 999
+        expected_data = {
+            "error": "No book found with the ID: %s" %(fakeId)
+        }
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('book', kwargs={'book_id': fakeId})
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, expected_data)
