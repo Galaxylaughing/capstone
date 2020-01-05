@@ -53,7 +53,12 @@ def books(request):
         return Response(json, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
-        if 'title' in request.data and 'authors' in request.data:
+        print("\nPOSTING\n", request.body)
+        print("LISTS", request.POST.lists, "\n")
+        print("TITLES", request.POST.getlist('title'), "\n")
+        print("AUTHORS", request.POST.getlist('author'), "\n")
+
+        if 'title' in request.data and 'author' in request.data:
             # make new book
             title = request.data['title']
             requestUser = User.objects.get(
@@ -62,15 +67,19 @@ def books(request):
                 title=title, user=requestUser)
 
             # make new authors
-            authors = request.data['authors']
+            authors = request.POST.getlist('author')
+            # if authors == []:
+            #     authors = request.data['author']
+
             for author in authors:
                 BookAuthor.objects.create(
                     author_name=author, book=newBook)
 
             # create response json
             serializer = BookSerializer(newBook)
-            json = {}
-            json['book'] = serializer.data
+            json = {
+                'books': [serializer.data]
+            }
 
             return Response(json, status=status.HTTP_201_CREATED)
         else:
