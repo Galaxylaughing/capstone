@@ -112,17 +112,28 @@ def book(request, book_id):
         return Response(json, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
+        # find the user making the request
+        requestUser = User.objects.get(
+            auth_token__key=request.auth)
+        requestUserId = requestUser.id
         # find book by ID; use .filter to avoid throwing error if not found
         filteredBook = Book.objects.filter(id=book_id)
 
         if filteredBook.count() > 0:
             book = filteredBook[0]
-            serializer = BookSerializer(book)
-            json = {
-                "book": serializer.data
-            }
-            book.delete()
-            return Response(json, status=status.HTTP_200_OK)
+            # check that book belongs to user making the request
+            if book.user.id == requestUserId:
+                serializer = BookSerializer(book)
+                json = {
+                    "book": serializer.data
+                }
+                book.delete()
+                return Response(json, status=status.HTTP_200_OK)
+            else:
+                json = {
+                    "error": "Users can only delete their own books; book %s belongs to user %s" %(book.id, book.user.id)
+                }
+                return Response(json, status=status.HTTP_400_BAD_REQUEST)
         
         # else
         json = {

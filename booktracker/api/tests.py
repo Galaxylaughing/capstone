@@ -470,3 +470,50 @@ class DeleteBookTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, expected_data)
+
+    def test_deletion_of_an_authors_only_book_deletes_author(self):
+        # create new book
+        title = "Unique Book"
+        uniqueBook = Book.objects.create(
+            title=title, user=self.user)
+        uniqueBookId = uniqueBook.id
+        # give the book an author
+        uniqueAuthor = "Unique Author"
+        uniqueBookAuthor = BookAuthor.objects.create(
+            author_name=uniqueAuthor, book=uniqueBook)
+        uniqueAuthorId = uniqueBookAuthor.id
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('book', kwargs={'book_id': uniqueBookId})
+        response = self.client.delete(url, format='json')
+
+        # check that I can't find the book in database
+        filteredBooks = Book.objects.filter(id=uniqueBookId)
+        self.assertEqual(filteredBooks.count(), 0)
+
+        # check that I can't find the author in database
+        filteredAuthors = BookAuthor.objects.filter(id=uniqueAuthorId)
+        self.assertEqual(filteredAuthors.count(), 0)
+
+    def test_user_cannot_delete_other_users_book(self):
+        newUser = User.objects.create(
+        username="New User", password="password")
+        # give the user a book
+        otherBook = Book.objects.create(
+            title="Other User's Book", user=newUser)
+
+        otherId = otherBook.id
+        expected_data = {
+            "error": "Users can only delete their own books; book %s belongs to user %s" %(otherId, newUser.id)
+        }
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('book', kwargs={'book_id': otherId})
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, expected_data)
