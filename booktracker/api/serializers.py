@@ -2,7 +2,7 @@
                              
 from rest_framework import serializers
          
-from .models import Book, BookAuthor
+from .models import Book, BookAuthor, Series
 
 
 class BookAuthorSerializer(serializers.ModelSerializer):
@@ -22,3 +22,10 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ['id', 'title', 'authors']
+
+class SeriesSerializer(serializers.ModelSerializer):
+    """ serializer for the Series model """
+
+    class Meta:
+        model = Series
+        fields = ['id', 'name', 'planned_count']

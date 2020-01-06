@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
-from .models import Book, BookAuthor #TODO: remove BookAuthor when I remove `if`
+from .models import Book, BookAuthor
 from .serializers import BookSerializer
 
 from django.apps import apps
@@ -23,28 +23,6 @@ def books(request):
         # find all books associated with this user
         bookList = Book.objects.filter(user=requestUser)
 
-        # TODO: remove; used for testing XCODE
-        if bookList.count() == 0:
-            firstBook = Book.objects.create(
-                title="Orange Book", user=requestUser)
-            BookAuthor.objects.create(
-                author_name="John Doe", book=firstBook)
-            BookAuthor.objects.create(
-                author_name="Jane Doe", book=firstBook)
-
-            secondBook = Book.objects.create(
-                title="Squash Book", user=requestUser)
-            BookAuthor.objects.create(
-                author_name="Jane Doe", book=secondBook)
-
-            thirdBook = Book.objects.create(
-                title="Apple Book", user=requestUser)
-            BookAuthor.objects.create(
-                author_name="M.K. Doe", book=thirdBook)
-
-            # alphabetical:
-            # Apple, Orange, Squash
-
         # serialize the book list
         serializer = BookSerializer(bookList, many=True)
         # add wrapper key
@@ -55,11 +33,6 @@ def books(request):
         return Response(json, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
-        # print("\nPOSTING\n", request.body)
-        # print("LISTS", request.POST.lists, "\n")
-        # print("TITLES", request.POST.getlist('title'), "\n")
-        # print("AUTHORS", request.POST.getlist('author'), "\n")
-
         if 'title' in request.data and 'author' in request.data:
             # make new book
             title = request.data['title']
@@ -70,8 +43,6 @@ def books(request):
 
             # make new authors
             authors = request.POST.getlist('author')
-            # if authors == []:
-            #     authors = request.data['author']
 
             for author in authors:
                 BookAuthor.objects.create(

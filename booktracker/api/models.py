@@ -4,6 +4,7 @@ from django.db import models
 class Book(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('userauth.User', on_delete=models.CASCADE)
+    series = models.ForeignKey('Series', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title
@@ -19,3 +20,10 @@ class BookAuthor(models.Model):
         indexes = [
             models.Index(fields=['author_name'], name='author_name_index'),
         ]
+
+class Series(models.Model):
+    name = models.CharField(max_length=255)
+    planned_count = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.name
