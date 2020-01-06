@@ -32,7 +32,9 @@ def books(request):
         return Response(json, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
-        if 'title' in request.data and 'author' in request.data:
+        # print("\nPOSTING\n", request.body)
+
+        if 'title' in request.data and 'authors' in request.data:
             # make new book
             title = request.data['title']
             requestUser = User.objects.get(
@@ -41,7 +43,7 @@ def books(request):
                 title=title, user=requestUser)
 
             # make new authors
-            authors = request.POST.getlist('author')
+            authors = request.data['authors']
 
             for author in authors:
                 BookAuthor.objects.create(
@@ -111,23 +113,20 @@ def book(request, book_id):
         return Response(json, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "PUT":
-        # print("\nPATCHING\n", request.body)
-        # print("LISTS", request.POST.lists, "\n")
-        # print("TITLES", request.POST.getlist('title'), "\n")
-        # print("AUTHORS", request.POST.getlist('author'), "\n")
+        print("\nPUTTING\n", request.body)
 
         # find book by ID; use .filter to avoid throwing error if not found
         book = Book.objects.filter(id=book_id)[0]
 
         # set new title if there is one
-        new_titles = request.POST.getlist('title')
-        if len(new_titles) > 0:
-            book.title = new_titles[0]
+        if 'title' in request.data:
+            new_title = request.data['title']
+            book.title = new_title
 
         # update authors if an author key is received
-        if "author" in request.data:
+        if "authors" in request.data:
             # check existing authors against input
-            new_authors = request.POST.getlist('author')
+            new_authors = request.data['authors']
             existing_authors = BookAuthor.objects.filter(book=book)
             for bookauthor in existing_authors:
                 # check if new input contains this author name
