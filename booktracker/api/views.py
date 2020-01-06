@@ -1,13 +1,12 @@
 from django.shortcuts import render
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
-from .models import Book, BookAuthor
-from .serializers import BookSerializer
+from .models import Book, BookAuthor, Series
+from .serializers import BookSerializer, SeriesSerializer
 
 from django.apps import apps
 User = apps.get_model('userauth','User')
@@ -61,7 +60,6 @@ def books(request):
 
 
 @api_view(["GET", "DELETE", "PUT"])
-@permission_classes([IsAuthenticated])
 def book(request, book_id):
     if request.method == 'GET':
         # find book by ID; use .filter to avoid throwing error if not found
@@ -159,3 +157,21 @@ def book(request, book_id):
             "books": [serializer.data]
         }
         return Response(json, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def series(request):
+    # get user from token passed into request header
+    request_user = User.objects.get(auth_token__key=request.auth)
+
+    # # find all series associated with this user
+    series_list = Series.objects.filter(user=request_user)
+
+    # # serialize the series list
+    serializer = SeriesSerializer(series_list, many=True)
+    # add wrapper key
+    json = {
+        'series': serializer.data
+    }
+
+    return Response(json, status=status.HTTP_200_OK)
