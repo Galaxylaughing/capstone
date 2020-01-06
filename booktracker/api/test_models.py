@@ -73,13 +73,17 @@ class BookAuthorTests(TestCase):
 class SeriesTests(TestCase):
     """ test module for the Series model """
 
+    def setUp(self):
+        self.user = User.objects.create(
+            username="Series Test User", password="password")
+
     def test_series_can_be_created(self):
         expected_count = Series.objects.count() + 1
 
         series_name = "Cool Series"
         planned_count = 3
         Series.objects.create(
-            name=series_name, planned_count=planned_count)
+            name=series_name, planned_count=planned_count, user=self.user)
 
         self.assertEqual(Series.objects.count(), expected_count)
 
@@ -94,7 +98,7 @@ class SeriesTests(TestCase):
         series_name = "Cool Series"
         planned_count = 3
         series = Series.objects.create(
-            name=series_name, planned_count=planned_count)
+            name=series_name, planned_count=planned_count, user=self.user)
 
         # create a book
         user = User.objects.create(
@@ -112,7 +116,7 @@ class SeriesTests(TestCase):
         series_name = "Cool Series"
         planned_count = 3
         series = Series.objects.create(
-            name=series_name, planned_count=planned_count)
+            name=series_name, planned_count=planned_count, user=self.user)
 
         # create a book
         user = User.objects.create(
@@ -135,6 +139,6 @@ class SeriesTests(TestCase):
         series_name = "Cool Series"
         planned_count = 3
         series = Series.objects.create(
-            name=series_name, planned_count=planned_count)
+            name=series_name, planned_count=planned_count, user=self.user)
         
         self.assertEqual(str(series), series_name)

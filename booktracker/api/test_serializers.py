@@ -81,12 +81,12 @@ class SerializerTests(TestCase):
         first_series_name = "Cool Series"
         first_planned_count = 3
         first_series = Series.objects.create(
-            name=first_series_name, planned_count=first_planned_count)
+            name=first_series_name, planned_count=first_planned_count, user=self.user)
 
         second_series_name = "Other Series"
         second_planned_count = 2
         second_series = Series.objects.create(
-            name=second_series_name, planned_count=second_planned_count)
+            name=second_series_name, planned_count=second_planned_count, user=self.user)
 
         first_series_id = first_series.id
         expected_data = [
