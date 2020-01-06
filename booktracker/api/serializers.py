@@ -26,6 +26,8 @@ class BookSerializer(serializers.ModelSerializer):
 class SeriesSerializer(serializers.ModelSerializer):
     """ serializer for the Series model """
 
+    books = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Series
-        fields = ['id', 'name', 'planned_count']
+        fields = ['id', 'name', 'planned_count', 'books']

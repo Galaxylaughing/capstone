@@ -5,7 +5,7 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('userauth.User', on_delete=models.CASCADE)
     # TODO: add position_in_series
-    series = models.ForeignKey('Series', on_delete=models.SET_NULL, null=True)
+    series = models.ForeignKey('Series', related_name='books', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title

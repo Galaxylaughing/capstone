@@ -167,6 +167,26 @@ def series(request):
     # # find all series associated with this user
     series_list = Series.objects.filter(user=request_user)
 
+    # TODO: remove when manual XCode testing of series endpoint is done
+    if series_list.count() == 0:
+        # make series:
+            # no titles
+        Series.objects.create(
+            name="The Name of the Wind", planned_count=3, user=request_user)
+            # one title
+        song_of_ice_and_fire = Series.objects.create(
+            name="A Song of Ice and Fire", planned_count=6, user=request_user)
+            # two titles
+        way_of_kings = Series.objects.create(
+            name="The Stormlight Archive", planned_count=10, user=request_user)
+        # give some of them books
+        Book.objects.create(
+            title="A Game of Thrones", user=request_user, series=song_of_ice_and_fire)
+        Book.objects.create(
+            title="The Way of Kings", user=request_user, series=way_of_kings)
+        Book.objects.create(
+            title="Words of Radiance", user=request_user, series=way_of_kings)
+
     # # serialize the series list
     serializer = SeriesSerializer(series_list, many=True)
     # add wrapper key

@@ -30,6 +30,7 @@ class SerializerTests(TestCase):
         BookAuthor.objects.create(
             author_name="Jane Doe", book=self.secondBook)
 
+    # BOOK SERIALIZER
     def test_bookserializer_returns_expected_data(self):
         firstId = self.firstBook.id
         secondId = self.secondBook.id
@@ -56,6 +57,7 @@ class SerializerTests(TestCase):
 
         self.assertEqual(serializer.data, expected_data)
 
+    # BOOK-AUTHOR SERIALIZER
     def test_bookauthorserializer_returns_expected_data(self):
         expected_data = [
             { 
@@ -77,11 +79,15 @@ class SerializerTests(TestCase):
 
         self.assertEqual(serializer.data, expected_data)
 
+    # SERIES SERIALIZER
     def test_series_serializer_returns_expected_data(self):
         first_series_name = "Cool Series"
         first_planned_count = 3
         first_series = Series.objects.create(
             name=first_series_name, planned_count=first_planned_count, user=self.user)
+        first_series_book = Book.objects.create(
+            title="Book One", user=self.user, series=first_series)
+        first_book_id = first_series_book.id
 
         second_series_name = "Other Series"
         second_planned_count = 2
@@ -93,12 +99,14 @@ class SerializerTests(TestCase):
             {
                 'id': first_series_id,
                 'name': first_series_name,
-                'planned_count': first_planned_count
+                'planned_count': first_planned_count,
+                'books': [first_book_id]
             },
             {
                 'id': second_series.id,
                 'name': second_series_name,
-                'planned_count': second_planned_count
+                'planned_count': second_planned_count,
+                'books': []
             }
         ]
 
