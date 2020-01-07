@@ -275,3 +275,31 @@ class UpdateBookTests(APITestCase):
         self.assertEqual(updated_book.position_in_series, 1)
         self.assertEqual(updated_book.series, series)
 
+    def test_returns_error_if_book_not_found(self):
+        fake_id = 999
+
+        # make the parameters
+        new_title = 'New Book With Unique Title'
+        data = {
+            "title": new_title
+        }
+
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('book', kwargs={'book_id': fake_id})
+        # make request
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'error': 'Could not find book with ID: %s' %(fake_id)
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.title, self.first_book.title)
+        

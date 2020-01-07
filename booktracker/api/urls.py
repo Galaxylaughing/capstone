@@ -5,7 +5,8 @@ from . import views
 urlpatterns = [
     path('books/', views.books, name="books"),
     path('books/<int:book_id>/', views.book, name="book"),
-    path('series/', views.series, name="series_list")
+    path('series/', views.all_series, name="series_list"),
+    path('series/<int:series_id>/', views.one_series, name="series_details")
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json'])

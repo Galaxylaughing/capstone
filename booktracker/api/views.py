@@ -127,86 +127,72 @@ def book(request, book_id):
 
     elif request.method == "PUT":
         # print("\nPUTTING\n", request.body)
+        filtered_books = Book.objects.filter(id=book_id)
 
-        # find book by ID; use .filter to avoid throwing error if not found
-        book = Book.objects.filter(id=book_id)[0]
+        if len(filtered_books) > 0:
+            book = filtered_books[0]
 
-        # set new title if there is one
-        if 'title' in request.data:
-            new_title = request.data['title']
-            book.title = new_title
+            # set new title if there is one
+            if 'title' in request.data:
+                new_title = request.data['title']
+                book.title = new_title
 
-        # update authors if an author key is received
-        if "authors" in request.data:
-            # check existing authors against input
-            new_authors = request.data['authors']
-            existing_authors = BookAuthor.objects.filter(book=book)
-            for bookauthor in existing_authors:
-                # check if new input contains this author name
-                existing_author_name = bookauthor.author_name
+            # update authors if an author key is received
+            if "authors" in request.data:
+                # check existing authors against input
+                new_authors = request.data['authors']
+                existing_authors = BookAuthor.objects.filter(book=book)
+                for bookauthor in existing_authors:
+                    # check if new input contains this author name
+                    existing_author_name = bookauthor.author_name
 
-                if existing_author_name in new_authors:
-                    # remove this author from new_authors
-                    new_authors.remove(existing_author_name)
-                else:
-                    # remove this bookauthor entry
-                    bookauthor.delete()
+                    if existing_author_name in new_authors:
+                        # remove this author from new_authors
+                        new_authors.remove(existing_author_name)
+                    else:
+                        # remove this bookauthor entry
+                        bookauthor.delete()
 
-            # set new authors
-            for author_name in new_authors:
-                BookAuthor.objects.create(
-                    author_name=author_name, book=book)
+                # set new authors
+                for author_name in new_authors:
+                    BookAuthor.objects.create(
+                        author_name=author_name, book=book)
 
-        # update series info if given any
-        if 'position_in_series' in request.data:
-            book.position_in_series = request.data['position_in_series']
-        if 'series' in request.data:
-            series_id = request.data['series']
-            series = Series.objects.get(id=series_id)
-            book.series = series
+            # update series info if given any
+            if 'position_in_series' in request.data:
+                book.position_in_series = request.data['position_in_series']
+            if 'series' in request.data:
+                series_id = request.data['series']
+                series = Series.objects.get(id=series_id)
+                book.series = series
 
-        # save updated book
-        book.save()
+            # save updated book
+            book.save()
 
-        # serialize updated book
-        updated_book = Book.objects.filter(id=book_id)
-        # serialize the book
-        serializer = BookSerializer(updated_book[0])
-        # add wrapper key
-        json = {
-            "books": [serializer.data]
-        }
-        return Response(json, status=status.HTTP_200_OK)
+            # serialize updated book
+            updated_book = Book.objects.filter(id=book_id)
+            # serialize the book
+            serializer = BookSerializer(updated_book[0])
+            # add wrapper key
+            json = {
+                "books": [serializer.data]
+            }
+            return Response(json, status=status.HTTP_200_OK)
+        else:
+            error_message = {
+                "error": "Could not find book with ID: %s" %(book_id)
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "POST"])
-def series(request):
+def all_series(request):
     if request.method == "GET":
         # get user from token passed into request header
         request_user = User.objects.get(auth_token__key=request.auth)
 
         # # find all series associated with this user
         series_list = Series.objects.filter(user=request_user)
-
-        # # TODO: remove when manual XCode testing of series endpoint is done
-        # if series_list.count() == 0:
-        #     # make series:
-        #         # no titles
-        #     Series.objects.create(
-        #         name="The Name of the Wind", planned_count=3, user=request_user)
-        #         # one title
-        #     song_of_ice_and_fire = Series.objects.create(
-        #         name="A Song of Ice and Fire", planned_count=6, user=request_user)
-        #         # two titles
-        #     way_of_kings = Series.objects.create(
-        #         name="The Stormlight Archive", planned_count=10, user=request_user)
-        #     # give some of them books
-        #     Book.objects.create(
-        #         title="A Game of Thrones", user=request_user, series=song_of_ice_and_fire)
-        #     Book.objects.create(
-        #         title="The Way of Kings", user=request_user, series=way_of_kings)
-        #     Book.objects.create(
-        #         title="Words of Radiance", user=request_user, series=way_of_kings)
 
         # # serialize the series list
         serializer = SeriesSerializer(series_list, many=True)
@@ -237,4 +223,38 @@ def series(request):
             return Response(json, status=status.HTTP_201_CREATED)
         else:
             error_message = {"error": "Invalid series parameters"}
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT"])
+def one_series(request, series_id):
+    if request.method == "PUT":
+        # find the series by id
+        filtered_series = Series.objects.filter(id=series_id)
+
+        if len(filtered_series) > 0:
+            series = filtered_series[0]
+
+            # update series info if given any
+            if 'name' in request.data:
+                series.name = request.data['name']
+            if 'planned_count' in request.data:
+                series.planned_count = request.data['planned_count']
+
+            # save updated series
+            series.save()
+
+            # serialize updated series
+            updated_series = Series.objects.filter(id=series_id)[0]
+            serializer = SeriesSerializer(updated_series)
+            # add wrapper key
+            json = {
+                "series": [serializer.data]
+            }
+
+            return Response(json, status=status.HTTP_200_OK)
+        else:
+            error_message = {
+                "error": "Could not find series with ID: %s" %(series_id)
+            }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
