@@ -39,7 +39,9 @@ class GetBookDetailsTest(APITestCase):
                 'title': 'First Book',
                 'authors': [
                     'Jane Doe'
-                ]
+                ],
+                'position_in_series': None,
+                'series': None
             }
         }
 

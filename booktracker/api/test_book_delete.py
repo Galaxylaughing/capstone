@@ -42,7 +42,9 @@ class DeleteBookTests(APITestCase):
                 'title': firstTitle,
                 'authors': [
                     firstAuthor
-                ]
+                ],
+                'position_in_series': None,
+                'series': None
             }
         }
 

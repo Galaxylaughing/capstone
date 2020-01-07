@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor
+from .models import Book, BookAuthor, Series
 from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
@@ -51,7 +51,53 @@ class PostBookTest(APITestCase):
                 'authors': [
                     'Other Author',
                     'New Author'
-                ]
+                ],
+                'position_in_series': None,
+                'series': None
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, expected_data)
+
+    def test_can_add_a_valid_book_with_series(self):
+        # make a new seires
+        series_name = "Cool Series"
+        planned_count = 3
+        series = Series.objects.create(
+            name=series_name, planned_count=planned_count, user=self.user)
+        series_id = series.id
+
+        # make some post parameters
+        title = 'New Book With Very Unique Title'
+        data = {
+            "title": title,
+            "authors": ["New Author"],
+            "position_in_series": 2,
+            "series": series_id
+        }
+
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('books')
+        # make request
+        response = self.client.post(url, data, format='json')
+
+        # find book in database
+        newBook = Book.objects.get(title=title)
+        # grab id
+        newBookId = newBook.id
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBookId,
+                'title': title,
+                'authors': [
+                    'New Author'
+                ],
+                'position_in_series': 2,
+                'series': series_id
             }]
         }
         

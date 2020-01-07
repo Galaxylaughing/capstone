@@ -39,8 +39,21 @@ def books(request):
             title = request.data['title']
             requestUser = User.objects.get(
                 auth_token__key=request.auth)
+
+            if 'position_in_series' in request.data:
+                position = request.data['position_in_series']
+            else:
+                position = None
+
+            if 'series' in request.data:
+                # find series by id
+                series_id = request.data['series']
+                series = Series.objects.get(id=series_id)
+            else:
+                series = None
+
             newBook = Book.objects.create(
-                title=title, user=requestUser)
+                title=title, user=requestUser, position_in_series=position, series=series)
 
             # make new authors
             authors = request.data['authors']

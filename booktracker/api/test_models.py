@@ -38,6 +38,16 @@ class BookTest(TestCase):
         
         self.assertEqual(str(book), book_title)
 
+    def test_book_can_have_a_position_in_series(self):
+        expectedCount = Book.objects.count() + 1
+        
+        new_book = Book.objects.create(
+            title="Test Book", user=self.user, position_in_series=1)
+        filteredBooks = Book.objects.filter(id=new_book.id)
+
+        self.assertEqual(Book.objects.count(), expectedCount)
+        self.assertTrue(filteredBooks.exists())
+
 
 class BookAuthorTests(TestCase):
     """ Test module for the BookAuthor model """

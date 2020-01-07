@@ -48,7 +48,9 @@ class GetBooksTest(APITestCase):
                     'title': 'Second Book',
                     'authors': [
                         'Jane Doe'
-                    ]
+                    ],
+                    'position_in_series': None,
+                    'series': None
                 },
                 {
                     'id': firstId,
@@ -56,7 +58,9 @@ class GetBooksTest(APITestCase):
                     'authors': [
                         'Jane Doe', 
                         'John Doe'
-                    ]
+                    ],
+                    'position_in_series': None,
+                    'series': None
                 }
             ]
         }
@@ -117,7 +121,9 @@ class GetBooksTest(APITestCase):
                     'title': 'First Book',
                     'authors': [
                         'Jane Doe'
-                    ]
+                    ],
+                    'position_in_series': None,
+                    'series': None
                 }
             ]
         }
