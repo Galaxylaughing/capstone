@@ -226,9 +226,37 @@ def all_series(request):
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["PUT"])
+@api_view(["PUT", "DELETE"])
 def one_series(request, series_id):
-    if request.method == "PUT":
+    if request.method == "DELETE":
+        filtered_series = Series.objects.filter(id=series_id)
+
+        if len(filtered_series) > 0:
+            series = filtered_series[0]
+
+            # check that series belongs to user making the request
+            requestUser = User.objects.get(auth_token__key=request.auth)
+            if series.user.id == requestUser.id:
+                serializer = SeriesSerializer(series)
+                json = {
+                    "series": serializer.data
+                }
+
+                series.delete()
+
+                return Response(json, status=status.HTTP_200_OK)
+            else:
+                error_message = {
+                    "error": "Users can only delete their own series; series %s belongs to user %s" %(series.id, series.user.id)
+                }
+                return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            error_message = {
+                "error": "Could not find series with ID: %s" %(series_id)
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "PUT":
         # find the series by id
         filtered_series = Series.objects.filter(id=series_id)
 
