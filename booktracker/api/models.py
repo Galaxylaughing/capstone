@@ -24,7 +24,7 @@ class BookAuthor(models.Model):
 
 class Series(models.Model):
     name = models.CharField(max_length=255)
-    planned_count = models.PositiveIntegerField()
+    planned_count = models.PositiveIntegerField(null=False)
     user = models.ForeignKey('userauth.User', on_delete=models.CASCADE)
 
     def __str__(self):

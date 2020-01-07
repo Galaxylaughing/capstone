@@ -66,7 +66,7 @@ class PostBookTest(APITestCase):
             "authors": ["New Author", "Other Author"]
         }
 
-        # DON'T request header
+        # DON'T add token to request header
         # get url
         url = reverse('books')
         # make request

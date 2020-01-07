@@ -113,7 +113,7 @@ def book(request, book_id):
         return Response(json, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "PUT":
-        print("\nPUTTING\n", request.body)
+        # print("\nPUTTING\n", request.body)
 
         # find book by ID; use .filter to avoid throwing error if not found
         book = Book.objects.filter(id=book_id)[0]
@@ -158,39 +158,62 @@ def book(request, book_id):
         return Response(json, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def series(request):
-    # get user from token passed into request header
-    request_user = User.objects.get(auth_token__key=request.auth)
+    if request.method == "GET":
+        # get user from token passed into request header
+        request_user = User.objects.get(auth_token__key=request.auth)
 
-    # # find all series associated with this user
-    series_list = Series.objects.filter(user=request_user)
+        # # find all series associated with this user
+        series_list = Series.objects.filter(user=request_user)
 
-    # TODO: remove when manual XCode testing of series endpoint is done
-    if series_list.count() == 0:
-        # make series:
-            # no titles
-        Series.objects.create(
-            name="The Name of the Wind", planned_count=3, user=request_user)
-            # one title
-        song_of_ice_and_fire = Series.objects.create(
-            name="A Song of Ice and Fire", planned_count=6, user=request_user)
-            # two titles
-        way_of_kings = Series.objects.create(
-            name="The Stormlight Archive", planned_count=10, user=request_user)
-        # give some of them books
-        Book.objects.create(
-            title="A Game of Thrones", user=request_user, series=song_of_ice_and_fire)
-        Book.objects.create(
-            title="The Way of Kings", user=request_user, series=way_of_kings)
-        Book.objects.create(
-            title="Words of Radiance", user=request_user, series=way_of_kings)
+        # TODO: remove when manual XCode testing of series endpoint is done
+        if series_list.count() == 0:
+            # make series:
+                # no titles
+            Series.objects.create(
+                name="The Name of the Wind", planned_count=3, user=request_user)
+                # one title
+            song_of_ice_and_fire = Series.objects.create(
+                name="A Song of Ice and Fire", planned_count=6, user=request_user)
+                # two titles
+            way_of_kings = Series.objects.create(
+                name="The Stormlight Archive", planned_count=10, user=request_user)
+            # give some of them books
+            Book.objects.create(
+                title="A Game of Thrones", user=request_user, series=song_of_ice_and_fire)
+            Book.objects.create(
+                title="The Way of Kings", user=request_user, series=way_of_kings)
+            Book.objects.create(
+                title="Words of Radiance", user=request_user, series=way_of_kings)
 
-    # # serialize the series list
-    serializer = SeriesSerializer(series_list, many=True)
-    # add wrapper key
-    json = {
-        'series': serializer.data
-    }
+        # # serialize the series list
+        serializer = SeriesSerializer(series_list, many=True)
+        # add wrapper key
+        json = {
+            'series': serializer.data
+        }
 
-    return Response(json, status=status.HTTP_200_OK)
+        return Response(json, status=status.HTTP_200_OK)
+
+    elif request.method == "POST":
+        # print("\nPOSTING\n", request.body)
+
+        if 'name' in request.data and 'planned_count' in request.data:
+            # make new series
+            name = request.data['name']
+            planned_count = request.data['planned_count']
+            request_user = User.objects.get(auth_token__key=request.auth)
+            new_series = Series.objects.create(
+                name=name, planned_count=planned_count, user=request_user)
+            
+            # create response json
+            serializer = SeriesSerializer(new_series)
+            json = {
+                "series": [serializer.data]
+            }
+
+            return Response(json, status=status.HTTP_201_CREATED)
+        else:
+            error_message = {"error": "Invalid series parameters"}
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
