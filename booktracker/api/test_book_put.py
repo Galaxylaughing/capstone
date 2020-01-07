@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor
+from .models import Book, BookAuthor, Series
 from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
@@ -219,3 +219,59 @@ class UpdateBookTests(APITestCase):
         self.assertEqual(authors.count(), 2)
         self.assertTrue(author_one in author_values)
         self.assertTrue(author_two in author_values)
+
+    def test_can_update_a_book_to_have_series(self):
+        """ if given only the series fields, and it is new, can update book """
+        series = Series.objects.create(
+            name="Cool Series", planned_count=3, user=self.user)
+        series_id = series.id
+
+        # make the parameters
+        data = {
+            "position_in_series": 1,
+            "series": series_id
+        }
+
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('book', kwargs={'book_id': self.book_id})
+        # make request
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        title = self.title
+        author_one = self.author_one
+        author_two = self.author_two
+        expected_data = {
+            'books': [{
+                'id': self.book_id,
+                'title': title,
+                'authors': [
+                    author_two,
+                    author_one
+                ],
+                'position_in_series': 1,
+                'series': series_id
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.title, title)
+
+        # find authors of this book
+        authors = BookAuthor.objects.filter(book=updated_book)
+        author_values = authors.values_list('author_name', flat=True)
+        
+        self.assertEqual(authors.count(), 2)
+        self.assertTrue(author_one in author_values)
+        self.assertTrue(author_two in author_values)
+
+        # find the series infor
+        self.assertEqual(updated_book.position_in_series, 1)
+        self.assertEqual(updated_book.series, series)
+

@@ -157,6 +157,14 @@ def book(request, book_id):
                 BookAuthor.objects.create(
                     author_name=author_name, book=book)
 
+        # update series info if given any
+        if 'position_in_series' in request.data:
+            book.position_in_series = request.data['position_in_series']
+        if 'series' in request.data:
+            series_id = request.data['series']
+            series = Series.objects.get(id=series_id)
+            book.series = series
+
         # save updated book
         book.save()
 
