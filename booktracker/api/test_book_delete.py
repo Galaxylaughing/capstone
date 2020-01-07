@@ -64,7 +64,7 @@ class DeleteBookTests(APITestCase):
     def test_returns_error_if_invalid_bookid(self):
         fakeId = 999
         expected_data = {
-            "error": "No book found with the ID: %s" %(fakeId)
+            "error": "Could not find book with ID: %s" %(fakeId)
         }
 
         # add token to header

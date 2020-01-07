@@ -121,7 +121,7 @@ def book(request, book_id):
         
         # else
         json = {
-            "error": "No book found with the ID: %s" %(book_id)
+            "error": "Could not find book with ID: %s" %(book_id)
         }
         return Response(json, status=status.HTTP_400_BAD_REQUEST)
 
