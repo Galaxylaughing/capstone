@@ -327,7 +327,7 @@ def tags(request):
 
         return Response(json, status=status.HTTP_200_OK)
 
-@api_view(["PUT"])
+@api_view(["PUT", "DELETE"])
 def tag(request, tag_name):
     if request.method == "PUT":
         if 'new_name' in request.data:
@@ -363,6 +363,30 @@ def tag(request, tag_name):
         else:
             error_message = {
                 "error": "new name was not provided"
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        request_user = User.objects.get(auth_token__key=request.auth)
+
+        # find all occurrences of the provided tag name in the database
+        matching_tags = BookTag.objects.filter(tag_name=tag_name, user=request_user)
+
+        if matching_tags.count() > 0:
+            # serialize tags to be deleted
+            serializer = BookTagSerializer(matching_tags, many=True)
+            json = {
+                "tags": serializer.data
+            }
+
+            # for each matching tag, delete that tag
+            for tag in matching_tags:
+                tag.delete()
+
+            return Response(json, status=status.HTTP_200_OK)
+        else:
+            error_message = {
+                "error": "Could not find any tags matching the name '%s'" %(tag_name)
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
