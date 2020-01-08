@@ -121,6 +121,40 @@ class PutSeriesTest(APITestCase):
         self.assertEqual(updated_series.name, series_name)
         self.assertEqual(updated_series.planned_count, self.series.planned_count)
 
+    def test_does_not_duplicate_series(self):
+        # make put parameters
+        data = {
+            'name': self.series.name,
+            'planned_count': 22
+        }
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('series_details', kwargs={'series_id': self.series.id})
+        # make request
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'series': [{
+                'id': self.series.id,
+                'name': self.series.name,
+                'planned_count': 22,
+                'books': []
+            }]
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find series in database
+        updated_series = Series.objects.get(id=self.series.id)
+        self.assertEqual(updated_series.name, self.series.name)
+        self.assertEqual(updated_series.planned_count, 22)
+
+        filtered_series = Series.objects.filter(name=self.series.name)
+        self.assertEqual(filtered_series.count(), 1)
+
     def test_returns_error_if_series_not_found(self):
         fake_id = 999
         # make put parameters
