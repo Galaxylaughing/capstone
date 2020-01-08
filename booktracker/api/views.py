@@ -327,8 +327,45 @@ def tags(request):
 
         return Response(json, status=status.HTTP_200_OK)
 
-# @api_view(["GET"])
-# def tag(request, tag_id):
+@api_view(["PUT"])
+def tag(request, tag_name):
+    if request.method == "PUT":
+        if 'new_name' in request.data:
+            new_name = request.data['new_name']
+
+            request_user = User.objects.get(auth_token__key=request.auth)
+            # find all occurrences of the provided tag name in the database
+            matching_tags = BookTag.objects.filter(tag_name=tag_name, user=request_user)
+
+            if matching_tags.count() > 0:
+                # for each matching tag, change that tag's name
+                for tag in matching_tags:
+                    tag.tag_name = new_name
+                    tag.save()
+
+                updated_tag = {
+                    "name": new_name,
+                    "books": [],
+                }
+                for tag in matching_tags:
+                    updated_tag['books'].append(tag.book.id)
+                # add wrapper
+                json = {
+                    "tag": updated_tag
+                }
+
+                return Response(json, status=status.HTTP_200_OK)
+            else:
+                error_message = {
+                    "error": "No tags match the name '%s'" %(tag_name)
+                }
+                return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            error_message = {
+                "error": "new name was not provided"
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
     # if request.method == "GET":
     #     booktag_results = BookTag.objects.filter(id=tag_id)
     #     if booktag_results.count() > 0:
