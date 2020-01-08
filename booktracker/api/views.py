@@ -286,3 +286,7 @@ def one_series(request, series_id):
                 "error": "Could not find series with ID: %s" %(series_id)
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def tags(request):
+    return Response(status=status.HTTP_200_OK)

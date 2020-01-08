@@ -5,14 +5,14 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor, Series
-from .serializers import BookSerializer, BookAuthorSerializer, SeriesSerializer
+from .models import Book, BookAuthor, Series, BookTag
+from .serializers import BookSerializer, BookAuthorSerializer, SeriesSerializer, BookTagSerializer
 
 from django.apps import apps
 User = apps.get_model('userauth','User')
 
-class SerializerTests(TestCase):
-    """ test module for BookSerializer """
+class BookAndBookAuthorSerializerTests(TestCase):
+    """ test module for BookSerializer and BookAuthor Serializer """
 
     def setUp(self):
         self.user = User.objects.create(
@@ -89,6 +89,8 @@ class SerializerTests(TestCase):
 
         self.assertEqual(serializer.data, expected_data)
 
+class SeriesSerializerTests(TestCase):
+
     # SERIES SERIALIZER
     def test_series_serializer_returns_expected_data(self):
         new_user = User.objects.create(
@@ -126,5 +128,42 @@ class SerializerTests(TestCase):
 
         seriesList = Series.objects.filter(user=new_user)
         serializer = SeriesSerializer(seriesList, many=True)
+
+        self.assertEqual(serializer.data, expected_data)
+
+class BookTagSerializerTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="Book Tag Serializer User", password="password")
+        self.token = str(self.user.auth_token)
+
+    # BOOKTAG SERIALIZER
+    def test_booktag_serializer_returns_expected_data(self):
+        tag_name_one = "non-fiction"
+        book_one = Book.objects.create(
+            title="Tag Serializer Test Book One", user=self.user)
+        new_tag = BookTag.objects.create(
+            tag_name=tag_name_one, user=self.user, book=book_one)
+
+        tag_name_two = "fiction"
+        book_two = Book.objects.create(
+            title="Tag Serializer Test Book Two", user=self.user)
+        new_tag = BookTag.objects.create(
+            tag_name=tag_name_two, user=self.user, book=book_two)
+
+        expected_data = [
+            {
+                "tag_name": tag_name_two,
+                "book": book_two.id
+            },
+            {
+                "tag_name": tag_name_one,
+                "book": book_one.id
+            },
+        ]
+
+        bookTagList = BookTag.objects.filter(user=self.user)
+        serializer = BookTagSerializer(bookTagList, many=True)
 
         self.assertEqual(serializer.data, expected_data)

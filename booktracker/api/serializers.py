@@ -2,7 +2,7 @@
                              
 from rest_framework import serializers
          
-from .models import Book, BookAuthor, Series
+from .models import Book, BookAuthor, Series, BookTag
 
 
 class BookAuthorSerializer(serializers.ModelSerializer):
@@ -13,6 +13,15 @@ class BookAuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookAuthor
         fields = ['author_name', 'book']
+
+class BookTagSerializer(serializers.ModelSerializer):
+    """ serializer for the BookTag model """
+
+    book = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = BookTag
+        fields = ['tag_name', 'book']
 
 class BookSerializer(serializers.ModelSerializer):
     """ serializer for the Book model """
