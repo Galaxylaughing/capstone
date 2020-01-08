@@ -327,28 +327,28 @@ def tags(request):
 
         return Response(json, status=status.HTTP_200_OK)
 
-@api_view(["GET"])
-def tag(request, tag_id):
-    if request.method == "GET":
-        booktag_results = BookTag.objects.filter(id=tag_id)
-        if booktag_results.count() > 0:
-            booktag = booktag_results[0]
+# @api_view(["GET"])
+# def tag(request, tag_id):
+    # if request.method == "GET":
+    #     booktag_results = BookTag.objects.filter(id=tag_id)
+    #     if booktag_results.count() > 0:
+    #         booktag = booktag_results[0]
 
-            request_user = User.objects.get(auth_token__key=request.auth)
-            if booktag.user.id == request_user.id:
-                serializer = BookTagSerializer(booktag)
-                json = {
-                    "tag": serializer.data
-                }
+    #         request_user = User.objects.get(auth_token__key=request.auth)
+    #         if booktag.user.id == request_user.id:
+    #             serializer = BookTagSerializer(booktag)
+    #             json = {
+    #                 "tag": serializer.data
+    #             }
 
-                return Response(json, status=status.HTTP_200_OK)
-            else:
-                error_message = {
-                    "error": "unauthorized"
-                }
-                return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            error_message = {
-                "error": "Could not find tag with ID: %s" %(tag_id)
-            }
-            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+    #             return Response(json, status=status.HTTP_200_OK)
+    #         else:
+    #             error_message = {
+    #                 "error": "unauthorized"
+    #             }
+    #             return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
+    #     else:
+    #         error_message = {
+    #             "error": "Could not find tag with ID: %s" %(tag_id)
+    #         }
+    #         return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
