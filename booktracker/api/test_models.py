@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor, Series
+from .models import Book, BookAuthor, Series, BookTag
 from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
@@ -152,3 +152,86 @@ class SeriesTests(TestCase):
             name=series_name, planned_count=planned_count, user=self.user)
         
         self.assertEqual(str(series), series_name)
+
+class BookTagTests(TestCase):
+    """ Test module for the BookTag model """
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="TagUser", password="password")
+        self.book = Book.objects.create(
+            title="TagBook", user=self.user)
+
+    def test_booktag_can_be_created(self):
+        expectedCount = BookTag.objects.count() + 1
+
+        tag_name = "cool-tag"
+        BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=self.book)
+
+        self.assertEqual(BookTag.objects.count(), expectedCount)
+        filteredBookTags = BookTag.objects.filter(
+            tag_name=tag_name)
+        self.assertTrue(filteredBookTags.exists())
+        self.assertEqual(filteredBookTags[0].tag_name, tag_name)
+        self.assertEqual(filteredBookTags[0].user, self.user)
+        self.assertEqual(filteredBookTags[0].book, self.book)
+
+    def test_booktag_does_not_restrict_character_set(self):
+        expectedCount = BookTag.objects.count() + 1
+
+        tag_name = "#MY:2cool_4_school/tag."
+        BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=self.book)
+
+        self.assertEqual(BookTag.objects.count(), expectedCount)
+
+        filteredBookTags = BookTag.objects.filter(
+            tag_name=tag_name)
+        self.assertTrue(filteredBookTags.exists())
+        self.assertEqual(filteredBookTags[0].tag_name, tag_name)
+        self.assertEqual(filteredBookTags[0].user, self.user)
+        self.assertEqual(filteredBookTags[0].book, self.book)
+
+    def test_tag_is_deleted_if_user_is_deleted(self):
+        # create tag
+        new_user = User.objects.create(
+            username="TagUserToBeDeleted", password="password")
+        tag_name = "cool-tag"
+        BookTag.objects.create(
+            tag_name=tag_name, user=new_user, book=self.book)
+
+        # delete the tag's user
+        new_user.delete()
+
+        # check that tag no longer exists
+        filteredBookTags = BookTag.objects.filter(
+            tag_name=tag_name)
+        self.assertFalse(filteredBookTags.exists())
+
+    def test_tag_is_deleted_if_associated_book_is_deleted(self):
+        # each booktag only has one book; 
+        # multiple booktag rows can refer to the same tag_name for other books
+
+        # create tag
+        new_book = Book.objects.create(
+            title="TagBookToBeDeleted", user=self.user)
+        tag_name = "cool-tag"
+        BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=new_book)
+
+        # delete the tag's book
+        new_book.delete()
+
+        # check that tag no longer exists
+        filteredBookTags = BookTag.objects.filter(
+            tag_name=tag_name)
+        self.assertFalse(filteredBookTags.exists())
+
+    def test_booktag_str_method(self):
+        tag_name = "cool-tag"
+
+        tag = BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=self.book)
+        
+        self.assertEqual(str(tag), tag_name)

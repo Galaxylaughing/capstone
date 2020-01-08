@@ -29,3 +29,16 @@ class Series(models.Model):
 
     def __str__(self):
         return self.name
+
+class BookTag(models.Model):
+    tag_name = models.CharField(max_length=255)
+    book = models.ForeignKey(Book, related_name="tags", on_delete=models.CASCADE)
+    user = models.ForeignKey('userauth.User', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.tag_name
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['tag_name'], name='tag_name_index'),
+        ]
