@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
-from .models import Book, BookAuthor, Series
-from .serializers import BookSerializer, SeriesSerializer
+from .models import Book, BookAuthor, Series, BookTag
+from .serializers import BookSerializer, SeriesSerializer, BookTagSerializer
 
 from django.apps import apps
 User = apps.get_model('userauth','User')
@@ -289,4 +289,14 @@ def one_series(request, series_id):
 
 @api_view(["GET"])
 def tags(request):
-    return Response(status=status.HTTP_200_OK)
+
+    request_user = User.objects.get(auth_token__key=request.auth)
+
+    booktag_list = BookTag.objects.filter(user=request_user)
+    serializer = BookTagSerializer(booktag_list, many=True)
+
+    json = {
+        "tags": serializer.data
+    }
+
+    return Response(json, status=status.HTTP_200_OK)

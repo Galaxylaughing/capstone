@@ -35,17 +35,17 @@ class GetBookTagsTest(APITestCase):
         expected_data = {
             "tags": [
                 {
-                    "tag_name": tag_one.tag_name,
-                    "book_id": new_book.id
+                    "tag_name": tag_three.tag_name,
+                    "book": new_book.id
                 },
                 {
                     "tag_name": tag_two.tag_name,
-                    "book_id": new_book.id
+                    "book": new_book.id
                 },
                 {
-                    "tag_name": tag_three.tag_name,
-                    "book_id": new_book.id
-                }
+                    "tag_name": tag_one.tag_name,
+                    "book": new_book.id
+                },
             ]
         }
 
@@ -54,6 +54,66 @@ class GetBookTagsTest(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data, expected_data)
 
+    def test_can_access_a_specific_users_booktags(self):
+        # create a book
+        new_book = Book.objects.create(
+            title="TagTestBook", user=self.user)
+        # create some tags
+        tag_one = BookTag.objects.create(
+            tag_name="fiction", user=self.user, book=new_book)
+        tag_two = BookTag.objects.create(
+            tag_name="fiction/fantasy", user=self.user, book=new_book)
+        tag_three = BookTag.objects.create(
+            tag_name="cool", user=self.user, book=new_book)
+
+        # create another user
+        other_user = User.objects.create(
+            username="OtherBookTagUser", password="password")
+        other_book = Book.objects.create(
+            title="TagTestBook", user=other_user)
+        other_tag = BookTag.objects.create(
+            tag_name="fiction", user=other_user, book=other_book)
+
+        expected_data = {
+            "tags": [
+                {
+                    "tag_name": tag_three.tag_name,
+                    "book": new_book.id
+                },
+                {
+                    "tag_name": tag_two.tag_name,
+                    "book": new_book.id
+                },
+                {
+                    "tag_name": tag_one.tag_name,
+                    "book": new_book.id
+                },
+            ]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('tags')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+    def test_returns_empty_list_if_no_booktags(self):
+        expected_data = {"tags": []}
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('tags')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
         
+    def test_returns_error_if_unauthorized(self):
+        # DON'T add token to header
+        # get the API response
+        url = reverse('tags')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
