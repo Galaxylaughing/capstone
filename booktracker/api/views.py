@@ -78,16 +78,24 @@ def books(request):
 def book(request, book_id):
     if request.method == 'GET':
         # find book by ID; use .filter to avoid throwing error if not found
-        book = Book.objects.filter(id=book_id)
+        book_results = Book.objects.filter(id=book_id)
 
-        if book.count() > 0:
-            # serialize the book
-            serializer = BookSerializer(book[0])
-            # add wrapper key
-            json = {}
-            json["book"] = serializer.data
+        if book_results.count() > 0:
+            book = book_results[0]
+            request_user = User.objects.get(auth_token__key=request.auth)
 
-            return Response(json, status=status.HTTP_200_OK)
+            if book.user.id == request_user.id:
+                serializer = BookSerializer(book)
+                json = {
+                    "book": serializer.data
+                }
+
+                return Response(json, status=status.HTTP_200_OK)
+            else:
+                error_message = {
+                    "error": "unauthorized"
+                }
+                return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
         
         # else
         json = {
@@ -300,3 +308,29 @@ def tags(request):
     }
 
     return Response(json, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+def tag(request, tag_id):
+    booktag_results = BookTag.objects.filter(id=tag_id)
+
+    if booktag_results.count() > 0:
+        booktag = booktag_results[0]
+
+        request_user = User.objects.get(auth_token__key=request.auth)
+        if booktag.user.id == request_user.id:
+            serializer = BookTagSerializer(booktag)
+            json = {
+                "tag": serializer.data
+            }
+
+            return Response(json, status=status.HTTP_200_OK)
+        else:
+            error_message = {
+                "error": "unauthorized"
+            }
+            return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        error_message = {
+            "error": "Could not find tag with ID: %s" %(tag_id)
+        }
+        return Response(error_message, status=status.HTTP_400_BAD_REQUEST)

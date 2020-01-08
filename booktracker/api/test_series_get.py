@@ -97,7 +97,6 @@ class GetSeriesTest(APITestCase):
         self.assertTrue(filteredSeries.exists())
         self.assertEqual(filteredSeries[0].planned_count, other_planned_count)
 
-    # @skip("TODO: unskip me once manual XCode testing of series list view complete")
     def test_returns_empty_list_if_no_series(self):
         expected_data = {'series': []}
 

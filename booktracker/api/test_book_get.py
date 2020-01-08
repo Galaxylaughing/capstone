@@ -54,6 +54,23 @@ class GetBookDetailsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
+    def test_cannot_get_details_for_another_users_book(self):
+        new_user = User.objects.create(
+            username="New User", password="password")
+        new_book = Book.objects.create(
+            title="New User's Book", user=new_user)
+
+        expected_data = {
+            "error": "unauthorized"
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': new_book.id})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, expected_data)
+
     def test_returns_error_if_no_book_found(self):
         fakeId = 999
         # add token to header
