@@ -21,30 +21,33 @@ class GetBookTagsTest(APITestCase):
         self.token = str(self.user.auth_token)
 
     def test_can_access_a_users_booktags(self):
-        # create a book
-        new_book = Book.objects.create(
-            title="TagTestBook", user=self.user)
-        # create some tags
-        tag_one = BookTag.objects.create(
-            tag_name="fiction", user=self.user, book=new_book)
-        tag_two = BookTag.objects.create(
-            tag_name="fiction/fantasy", user=self.user, book=new_book)
-        tag_three = BookTag.objects.create(
-            tag_name="cool", user=self.user, book=new_book)
+        new_book_one = Book.objects.create(
+            title="TagTestBookOne", user=self.user)
+        fiction_one = BookTag.objects.create(
+            tag_name="fiction", user=self.user, book=new_book_one)
+        fantasy_one = BookTag.objects.create(
+            tag_name="fiction/fantasy", user=self.user, book=new_book_one)
+        cool_one = BookTag.objects.create(
+            tag_name="cool", user=self.user, book=new_book_one)
+
+        new_book_two = Book.objects.create(
+            title="TagTestBookTwo", user=self.user)
+        fiction_two = BookTag.objects.create(
+            tag_name="fiction", user=self.user, book=new_book_two)
 
         expected_data = {
             "tags": [
                 {
-                    "tag_name": tag_three.tag_name,
-                    "book": new_book.id
+                    "name": fiction_one.tag_name,
+                    "books": [new_book_two.id, new_book_one.id]
                 },
                 {
-                    "tag_name": tag_two.tag_name,
-                    "book": new_book.id
+                    "name": cool_one.tag_name,
+                    "books": [new_book_one.id]
                 },
                 {
-                    "tag_name": tag_one.tag_name,
-                    "book": new_book.id
+                    "name": fantasy_one.tag_name,
+                    "books": [new_book_one.id]
                 },
             ]
         }
@@ -57,17 +60,18 @@ class GetBookTagsTest(APITestCase):
         self.assertEqual(response.data, expected_data)
 
     def test_can_access_a_specific_users_booktags(self):
-        # create a book
-        new_book = Book.objects.create(
-            title="TagTestBook", user=self.user)
-        # create some tags
-        tag_one = BookTag.objects.create(
-            tag_name="fiction", user=self.user, book=new_book)
-        tag_two = BookTag.objects.create(
-            tag_name="fiction/fantasy", user=self.user, book=new_book)
-        tag_three = BookTag.objects.create(
-            tag_name="cool", user=self.user, book=new_book)
+        new_book_one = Book.objects.create(
+            title="TagTestBookOne", user=self.user)
+        fiction_one = BookTag.objects.create(
+            tag_name="fiction", user=self.user, book=new_book_one)
+        cool_one = BookTag.objects.create(
+            tag_name="cool", user=self.user, book=new_book_one)
 
+        new_book_two = Book.objects.create(
+            title="TagTestBookTwo", user=self.user)
+        fiction_two = BookTag.objects.create(
+            tag_name="fiction", user=self.user, book=new_book_two)
+        
         # create another user
         other_user = User.objects.create(
             username="OtherBookTagUser", password="password")
@@ -79,16 +83,12 @@ class GetBookTagsTest(APITestCase):
         expected_data = {
             "tags": [
                 {
-                    "tag_name": tag_three.tag_name,
-                    "book": new_book.id
+                    "name": fiction_one.tag_name,
+                    "books": [new_book_two.id, new_book_one.id]
                 },
                 {
-                    "tag_name": tag_two.tag_name,
-                    "book": new_book.id
-                },
-                {
-                    "tag_name": tag_one.tag_name,
-                    "book": new_book.id
+                    "name": cool_one.tag_name,
+                    "books": [new_book_one.id]
                 },
             ]
         }

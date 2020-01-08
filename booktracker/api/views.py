@@ -297,40 +297,58 @@ def one_series(request, series_id):
 
 @api_view(["GET"])
 def tags(request):
+    if request.method == "GET":
+        request_user = User.objects.get(auth_token__key=request.auth)
 
-    request_user = User.objects.get(auth_token__key=request.auth)
+        booktag_list = BookTag.objects.filter(user=request_user)
+        # organize into list like
+        # { 'tag_name': [...book_ids...] }
+        collected_tags = {}
+        for tag in booktag_list:
+            if tag.tag_name in collected_tags:
+                collected_tags[tag.tag_name].append(tag.book.id)
+            else:
+                collected_tags[tag.tag_name] = [tag.book.id]
 
-    booktag_list = BookTag.objects.filter(user=request_user)
-    serializer = BookTagSerializer(booktag_list, many=True)
+        # organize into objects like
+        # { 'name': tag_name, 'books': [...] }
+        tag_list = []
+        for tag_name in collected_tags:
+            new_tag = {
+                "name": tag_name,
+                "books": collected_tags[tag_name]
+            }
+            tag_list.append(new_tag)
 
-    json = {
-        "tags": serializer.data
-    }
+        # add wrapper
+        json = {
+            "tags": tag_list
+        }
 
-    return Response(json, status=status.HTTP_200_OK)
+        return Response(json, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 def tag(request, tag_id):
-    booktag_results = BookTag.objects.filter(id=tag_id)
+    if request.method == "GET":
+        booktag_results = BookTag.objects.filter(id=tag_id)
+        if booktag_results.count() > 0:
+            booktag = booktag_results[0]
 
-    if booktag_results.count() > 0:
-        booktag = booktag_results[0]
+            request_user = User.objects.get(auth_token__key=request.auth)
+            if booktag.user.id == request_user.id:
+                serializer = BookTagSerializer(booktag)
+                json = {
+                    "tag": serializer.data
+                }
 
-        request_user = User.objects.get(auth_token__key=request.auth)
-        if booktag.user.id == request_user.id:
-            serializer = BookTagSerializer(booktag)
-            json = {
-                "tag": serializer.data
-            }
-
-            return Response(json, status=status.HTTP_200_OK)
+                return Response(json, status=status.HTTP_200_OK)
+            else:
+                error_message = {
+                    "error": "unauthorized"
+                }
+                return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
         else:
             error_message = {
-                "error": "unauthorized"
+                "error": "Could not find tag with ID: %s" %(tag_id)
             }
-            return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
-    else:
-        error_message = {
-            "error": "Could not find tag with ID: %s" %(tag_id)
-        }
-        return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
