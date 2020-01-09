@@ -403,3 +403,51 @@ class UpdateBookTests(APITestCase):
             }]
         }
         self.assertEqual(response.data, expected_data)
+
+    def test_will_remove_tags(self):
+        # create new book
+        book = Book.objects.create(
+            title="A New Book That Already Has A Tag", user=self.user)
+        tag_name = "fantasy"
+        BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=book)
+
+        filtered_tags_before = BookTag.objects.filter(tag_name=tag_name, user=self.user, book=book)
+        self.assertTrue(filtered_tags_before.exists())
+        self.assertEqual(filtered_tags_before.count(), 1)
+
+        new_tag_name = "fiction"
+        # make the parameters
+        data = {
+            "tags": [new_tag_name]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': book.id})
+        response = self.client.put(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        all_tags_for_book = BookTag.objects.filter(user=self.user, book=book)
+        self.assertEqual(all_tags_for_book.count(), 1)
+        
+        # should have generated a booktag row
+        filtered_tags_after = BookTag.objects.filter(tag_name=new_tag_name, user=self.user, book=book)
+        self.assertTrue(filtered_tags_after.exists())
+        self.assertEqual(filtered_tags_after.count(), 1)
+
+        # should have removed old tag
+        filtered_tags_after_2 = BookTag.objects.filter(tag_name=tag_name, user=self.user, book=book)
+        self.assertFalse(filtered_tags_after_2.exists())
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': book.id,
+                'title': book.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': [new_tag_name]
+            }]
+        }
+        self.assertEqual(response.data, expected_data)

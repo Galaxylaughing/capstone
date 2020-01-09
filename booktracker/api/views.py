@@ -79,6 +79,13 @@ def books(request):
                 BookAuthor.objects.create(
                     author_name=author, book=newBook)
 
+            if 'tags' in request.data:
+                # make new tags
+                tags = request.data['tags']
+                for tag in tags:
+                    BookTag.objects.create(
+                        tag_name=tag, book=newBook, user=requestUser)
+
             # create response json
             serializer = BookSerializer(newBook)
             json = {

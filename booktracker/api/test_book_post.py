@@ -27,9 +27,12 @@ class PostBookTest(APITestCase):
     def test_can_add_a_valid_book(self):
         # make some post parameters
         title = 'New Book With Unique Title'
+        tag_one = "new"
+        tag_two = "very-unique"
         data = {
             "title": title,
-            "authors": ["New Author", "Other Author"]
+            "authors": ["New Author", "Other Author"],
+            "tags": [tag_one, tag_two]
         }
 
         # set request header
@@ -54,7 +57,7 @@ class PostBookTest(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
-                'tags': []
+                'tags': [tag_two, tag_one]
             }]
         }
         
