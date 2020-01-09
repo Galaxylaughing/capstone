@@ -422,7 +422,7 @@ def tag(request, tag_name):
             if matching_tags.count() > 0:
                 if len(new_books) > 0:
                     updated_tag = {
-                        "name": new_name,
+                        "tag_name": new_name,
                         "books": []
                     }
 
@@ -454,7 +454,7 @@ def tag(request, tag_name):
 
                     # add wrapper
                     json = {
-                        "tag": updated_tag
+                        "tags": [updated_tag]
                     }
                     return Response(json, status=status.HTTP_200_OK)
                 # if new book list is empty, delete the tag instances

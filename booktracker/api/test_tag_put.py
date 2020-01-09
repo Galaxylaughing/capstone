@@ -43,10 +43,10 @@ class PutBookTagTest(APITestCase):
         response = self.client.put(url, data, format='json')
 
         expected_data = {
-            "tag": {
-                "name": data["new_name"],
+            "tags": [{
+                "tag_name": data["new_name"],
                 "books": [book_one.id, book_two.id]
-            }
+            }]
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
@@ -72,10 +72,10 @@ class PutBookTagTest(APITestCase):
         response = self.client.put(url, data, format='json')
 
         expected_data = {
-            "tag": {
-                "name": data["new_name"],
+            "tags": [{
+                "tag_name": data["new_name"],
                 "books": [book_one.id]
-            }
+            }]
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
@@ -121,10 +121,10 @@ class PutBookTagTest(APITestCase):
         response = self.client.put(url, data, format='json')
 
         expected_data = {
-            "tag": {
-                "name": data["new_name"],
+            "tags": [{
+                "tag_name": data["new_name"],
                 "books": [book_one.id]
-            }
+            }]
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
@@ -202,10 +202,10 @@ class PutBookTagTest(APITestCase):
         self.assertTrue(added.exists())
 
         expected_data = {
-            "tag": {
-                "name": fiction.tag_name,
+            "tags": [{
+                "tag_name": fiction.tag_name,
                 "books": [book_two.id]
-            }
+            }]
         }
         self.assertEqual(response.data, expected_data)
 
@@ -234,10 +234,10 @@ class PutBookTagTest(APITestCase):
         self.assertTrue(added.exists())
 
         expected_data = {
-            "tag": {
-                "name": fiction.tag_name,
+            "tags": [{
+                "tag_name": fiction.tag_name,
                 "books": [book_one.id, book_two.id]
-            }
+            }]
         }
         self.assertEqual(response.data, expected_data)
 
