@@ -186,8 +186,15 @@ def book(request, book_id):
 
             # update tags if an tag key is received
             if "tags" in request.data:
-                # check existing authors against input
-                new_tags = request.data['tags']
+                recieved_tags = request.data['tags']
+
+                # remove any duplicates from input
+                new_tags = []
+                for tag in recieved_tags:
+                    if tag not in new_tags:
+                        new_tags.append(tag)
+
+                # check existing tags against input
                 existing_tags = BookTag.objects.filter(book=book, user=request_user)
                 for booktag in existing_tags:
                     # check if new input contains this tag name
@@ -340,12 +347,14 @@ def tags(request):
         request_user = User.objects.get(auth_token__key=request.auth)
 
         booktag_list = BookTag.objects.filter(user=request_user)
+
         # organize into list like
         # { 'tag_name': [...book_ids...] }
         collected_tags = {}
         for tag in booktag_list:
             if tag.tag_name in collected_tags:
-                collected_tags[tag.tag_name].append(tag.book.id)
+                if tag.book.id not in collected_tags[tag.tag_name]:
+                    collected_tags[tag.tag_name].append(tag.book.id)
             else:
                 collected_tags[tag.tag_name] = [tag.book.id]
 

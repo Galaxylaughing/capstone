@@ -117,3 +117,28 @@ class GetBookTagsTest(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_will_not_create_duplicate_tags(self):
+        book = Book.objects.create(
+            title="BookOneWithATag", user=self.user)
+        tag_name = "fiction"
+        fiction_one = BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=book)
+        fiction_one = BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=book)
+
+        expected_data = {
+            "tags": [
+                {
+                    "tag_name": tag_name,
+                    "books": [book.id]
+                },
+            ]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('tags')
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)

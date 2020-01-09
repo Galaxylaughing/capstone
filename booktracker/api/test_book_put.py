@@ -326,3 +326,80 @@ class UpdateBookTests(APITestCase):
         updated_book = Book.objects.get(id=self.book_id)
         self.assertEqual(updated_book.title, self.first_book.title)
         
+    def test_will_not_create_a_tag_that_already_exists(self):
+        # create new book
+        book = Book.objects.create(
+            title="A New Book That Already Has A Tag", user=self.user)
+        tag_name = "fantasy"
+        BookTag.objects.create(
+            tag_name=tag_name, user=self.user, book=book)
+
+        filtered_tags_before = BookTag.objects.filter(tag_name=tag_name, user=self.user, book=book)
+        self.assertTrue(filtered_tags_before.exists())
+        self.assertEqual(filtered_tags_before.count(), 1)
+
+        # make the parameters
+        data = {
+            "tags": [tag_name]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': book.id})
+        response = self.client.put(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # should NOT have generated a booktag row
+        filtered_tags_after = BookTag.objects.filter(tag_name=tag_name, user=self.user, book=book)
+
+        self.assertTrue(filtered_tags_after.exists())
+        self.assertEqual(filtered_tags_after.count(), 1)
+        
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': book.id,
+                'title': book.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': [tag_name]
+            }]
+        }
+        self.assertEqual(response.data, expected_data)
+
+    def test_will_not_create_duplicate_tags(self):
+        # create new book
+        book = Book.objects.create(
+            title="A New Book That Already Has A Tag", user=self.user)
+        tag_name = "fantasy"
+
+        # make the parameters
+        data = {
+            "tags": [tag_name, tag_name]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': book.id})
+        response = self.client.put(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # should NOT have generated a booktag row
+        filtered_tags_after = BookTag.objects.filter(tag_name=tag_name, user=self.user, book=book)
+
+        self.assertTrue(filtered_tags_after.exists())
+        self.assertEqual(filtered_tags_after.count(), 1)
+        
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': book.id,
+                'title': book.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': [tag_name]
+            }]
+        }
+        self.assertEqual(response.data, expected_data)
