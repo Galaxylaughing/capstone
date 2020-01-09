@@ -412,31 +412,61 @@ def tags(request):
 @api_view(["PUT", "DELETE"])
 def tag(request, tag_name):
     if request.method == "PUT":
-        if 'new_name' in request.data:
+        if 'new_name' in request.data and 'books' in request.data:
             new_name = request.data['new_name']
-
+            new_books = request.data['books']
             request_user = User.objects.get(auth_token__key=request.auth)
+
             # find all occurrences of the provided tag name in the database
             matching_tags = BookTag.objects.filter(tag_name=tag_name, user=request_user)
-
             if matching_tags.count() > 0:
-                # for each matching tag, change that tag's name
-                for tag in matching_tags:
-                    tag.tag_name = new_name
-                    tag.save()
+                if len(new_books) > 0:
+                    updated_tag = {
+                        "name": new_name,
+                        "books": []
+                    }
 
-                updated_tag = {
-                    "name": new_name,
-                    "books": [],
-                }
-                for tag in matching_tags:
-                    updated_tag['books'].append(tag.book.id)
-                # add wrapper
-                json = {
-                    "tag": updated_tag
-                }
+                    for book_id in new_books:
+                        matching_books = Book.objects.filter(id=book_id)
+                        # if there's a matching book
+                        if matching_books.count() > 0:
+                            matching_book = matching_books[0]
+                            matching_booktags = BookTag.objects.filter(tag_name=tag_name, user=request_user, book=matching_book)
+                            # if there's an existing booktag for it
+                            if matching_booktags.count() > 0:
+                                matching_booktag = matching_booktags[0]
+                                matching_booktag.tag_name = new_name
+                                matching_booktag.save()
+                                updated_tag["books"].append(matching_book.id)
+                            # if there isn't an existing booktag
+                            else:
+                                new_booktag = BookTag.objects.create(tag_name=new_name, user=request_user, book=matching_book)
+                                updated_tag["books"].append(matching_book.id)
+                        # if there isn't a matching book
+                        else:
+                            error_message = { "error": "Could not find book with ID: %s" %(book_id) }
+                            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+                        
+                    for matching_tag in matching_tags:
+                        # if that tag's book id is not also in new_books
+                        if matching_tag.book.id not in new_books:
+                            matching_tag.delete()
 
-                return Response(json, status=status.HTTP_200_OK)
+                    # add wrapper
+                    json = {
+                        "tag": updated_tag
+                    }
+                    return Response(json, status=status.HTTP_200_OK)
+                # if new book list is empty, delete the tag instances
+                else:
+                    # serialize tags to be deleted
+                    serializer = BookTagSerializer(matching_tags, many=True)
+                    json = {
+                        "tags": serializer.data
+                    }
+                    for tag in matching_tags:
+                        tag.delete()
+                    return Response(json, status=status.HTTP_200_OK)
             else:
                 error_message = {
                     "error": "No tags match the name '%s'" %(tag_name)
@@ -444,7 +474,7 @@ def tag(request, tag_name):
                 return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
         else:
             error_message = {
-                "error": "new name was not provided"
+                "error": "new name or list of books was not provided"
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
