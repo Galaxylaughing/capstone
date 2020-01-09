@@ -50,7 +50,8 @@ class GetBooksTest(APITestCase):
                         'Jane Doe'
                     ],
                     'position_in_series': None,
-                    'series': None
+                    'series': None,
+                    'tags': []
                 },
                 {
                     'id': firstId,
@@ -60,7 +61,8 @@ class GetBooksTest(APITestCase):
                         'John Doe'
                     ],
                     'position_in_series': None,
-                    'series': None
+                    'series': None,
+                    'tags': []
                 }
             ]
         }
@@ -123,7 +125,8 @@ class GetBooksTest(APITestCase):
                         'Jane Doe'
                     ],
                     'position_in_series': None,
-                    'series': None
+                    'series': None,
+                    'tags': []
                 }
             ]
         }

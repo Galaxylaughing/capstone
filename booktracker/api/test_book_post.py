@@ -53,7 +53,8 @@ class PostBookTest(APITestCase):
                     'New Author'
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }]
         }
         
@@ -97,7 +98,8 @@ class PostBookTest(APITestCase):
                     'New Author'
                 ],
                 'position_in_series': 2,
-                'series': series_id
+                'series': series_id,
+                'tags': []
             }]
         }
         
@@ -136,6 +138,33 @@ class PostBookTest(APITestCase):
 
         expected_error = {
             "error": "Invalid book parameters"
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, expected_error)
+
+    @skip("Not sure this is worth it, considering possible real life edge cases")
+    def test_cannot_add_duplicate_title_author_combinations(self):
+        title = 'A Generic Book Title'
+        author_name = "Author"
+
+        existing_book = Book.objects.create(
+            title=title, user=self.user)
+        existing_author = BookAuthor.objects.create(
+            author_name=author_name, book=existing_book)
+
+        # post parameters
+        data = {
+            "title": title,
+            "authors": [author_name]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('books')
+        response = self.client.post(url, data, format='json')
+
+        expected_error = {
+            "error": "Book with provided title and author(s) already exists"
         }
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

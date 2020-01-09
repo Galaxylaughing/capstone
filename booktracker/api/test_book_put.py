@@ -62,7 +62,8 @@ class UpdateBookTests(APITestCase):
                     'New Author'
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }]
         }
         
@@ -109,7 +110,8 @@ class UpdateBookTests(APITestCase):
                     author_one
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }]
         }
         
@@ -155,7 +157,8 @@ class UpdateBookTests(APITestCase):
                     author_one
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }]
         }
         
@@ -201,7 +204,8 @@ class UpdateBookTests(APITestCase):
                     author_one
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }]
         }
         
@@ -252,7 +256,8 @@ class UpdateBookTests(APITestCase):
                     author_one
                 ],
                 'position_in_series': 1,
-                'series': series_id
+                'series': series_id,
+                'tags': []
             }]
         }
         

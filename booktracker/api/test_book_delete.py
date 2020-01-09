@@ -44,7 +44,8 @@ class DeleteBookTests(APITestCase):
                     firstAuthor
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }
         }
 

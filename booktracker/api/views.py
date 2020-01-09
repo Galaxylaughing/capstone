@@ -35,11 +35,29 @@ def books(request):
         # print("\nPOSTING\n", request.body)
 
         if 'title' in request.data and 'authors' in request.data:
-            # make new book
-            title = request.data['title']
             requestUser = User.objects.get(
                 auth_token__key=request.auth)
+            title = request.data['title']
+            authors = request.data['authors']
 
+            # # check user's existing books for matches
+            # existing_books = Book.objects.filter(title=title, user=requestUser)
+            # already_authors = BookAuthor.objects.filter(author_name=authors[0])
+            # all_duplicates = {}
+            # if existing_books.count() > 0: 
+            #     # for each book with a matching title and user,               
+            #     for existing_book in existing_books:
+            #         duplicates = []
+            #         # find authors of the book
+            #         found_authors = BookAuthor.objects.filter(book=existing_book)
+            #         # check each found author against each request author
+            #         for found_author in found_authors:
+            #             if found_author.author_name in authors:
+            #                 duplicates.append(found_author)
+            #         all_duplicates[existing_book.title] = duplicates
+
+            #     print(all_duplicates)
+                        
             if 'position_in_series' in request.data:
                 position = request.data['position_in_series']
             else:
@@ -52,12 +70,11 @@ def books(request):
             else:
                 series = None
 
+            # make new book
             newBook = Book.objects.create(
                 title=title, user=requestUser, position_in_series=position, series=series)
 
             # make new authors
-            authors = request.data['authors']
-
             for author in authors:
                 BookAuthor.objects.create(
                     author_name=author, book=newBook)
@@ -315,10 +332,37 @@ def tags(request):
         tag_list = []
         for tag_name in collected_tags:
             new_tag = {
-                "name": tag_name,
+                "tag_name": tag_name,
                 "books": collected_tags[tag_name]
             }
             tag_list.append(new_tag)
+
+        # #############################################
+        # if len(tag_list) == 0:
+        #     user = User.objects.get(id=17)
+        #     redmond_trivia = Book.objects.get(id=40)
+        #     tag_one = BookTag.objects.create(tag_name="non-fiction", user=user, book=redmond_trivia)
+        #     tag_two = BookTag.objects.create(tag_name="non-fiction/historical", user=user, book=redmond_trivia)
+        #     carousel = Book.objects.get(id=44)
+        #     tag_three = BookTag.objects.create(tag_name="non-fiction", user=user, book=carousel)
+        #     tag_four = BookTag.objects.create(tag_name="fiction", user=user, book=carousel)
+
+        #     tag_list = [
+        #         {
+        #             "tag_name": tag_one.tag_name,
+        #             "books": [redmond_trivia.id, carousel.id]
+        #         },
+        #         {
+        #             "tag_name": tag_two.tag_name,
+        #             "books": [redmond_trivia.id]
+        #         },
+        #         {
+        #             "tag_name": tag_four.tag_name,
+        #             "books": [carousel.id]
+        #         }
+        #     ]
+
+        # #############################################
 
         # add wrapper
         json = {

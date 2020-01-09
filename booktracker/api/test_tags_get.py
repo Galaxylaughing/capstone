@@ -38,15 +38,15 @@ class GetBookTagsTest(APITestCase):
         expected_data = {
             "tags": [
                 {
-                    "name": fiction_one.tag_name,
+                    "tag_name": fiction_one.tag_name,
                     "books": [new_book_two.id, new_book_one.id]
                 },
                 {
-                    "name": cool_one.tag_name,
+                    "tag_name": cool_one.tag_name,
                     "books": [new_book_one.id]
                 },
                 {
-                    "name": fantasy_one.tag_name,
+                    "tag_name": fantasy_one.tag_name,
                     "books": [new_book_one.id]
                 },
             ]
@@ -83,11 +83,11 @@ class GetBookTagsTest(APITestCase):
         expected_data = {
             "tags": [
                 {
-                    "name": fiction_one.tag_name,
+                    "tag_name": fiction_one.tag_name,
                     "books": [new_book_two.id, new_book_one.id]
                 },
                 {
-                    "name": cool_one.tag_name,
+                    "tag_name": cool_one.tag_name,
                     "books": [new_book_one.id]
                 },
             ]

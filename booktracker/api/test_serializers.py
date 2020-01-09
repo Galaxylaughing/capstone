@@ -49,7 +49,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
                     'John Doe'
                 ],
                 'position_in_series': None,
-                'series': None
+                'series': None,
+                'tags': []
             }, 
             {
                 'id': secondId,
@@ -58,12 +59,35 @@ class BookAndBookAuthorSerializerTests(TestCase):
                     'Jane Doe'
                 ],
                 'position_in_series': 1,
-                'series': series_id
+                'series': series_id,
+                'tags': []
             }
         ]
 
         bookList = Book.objects.all()
         serializer = BookSerializer(bookList, many=True)
+
+        self.assertEqual(serializer.data, expected_data)
+
+    def test_serializer_will_return_tags(self):
+        user = User.objects.create(
+            username='UserToTestTagRelationship', password='password')
+        book = Book.objects.create(
+            title="Book", user=user)
+        tag = BookTag.objects.create(
+            tag_name="fiction", user=user, book=book)
+
+        expected_data = {
+            'id': book.id,
+            'title': book.title,
+            'authors': [],
+            'position_in_series': None,
+            'series': None,
+            'tags': [tag.id]
+        }
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
 
         self.assertEqual(serializer.data, expected_data)
 

@@ -28,10 +28,11 @@ class BookSerializer(serializers.ModelSerializer):
 
     authors = serializers.StringRelatedField(many=True)
     series = serializers.PrimaryKeyRelatedField(read_only=True)
+    tags = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'position_in_series', 'series']
+        fields = ['id', 'title', 'authors', 'position_in_series', 'series', 'tags']
 
 class SeriesSerializer(serializers.ModelSerializer):
     """ serializer for the Series model """
