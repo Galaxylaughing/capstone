@@ -151,6 +151,7 @@ def book(request, book_id):
         return Response(json, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "PUT":
+        request_user = User.objects.get(auth_token__key=request.auth)
         # print("\nPUTTING\n", request.body)
         filtered_books = Book.objects.filter(id=book_id)
 
@@ -182,6 +183,27 @@ def book(request, book_id):
                 for author_name in new_authors:
                     BookAuthor.objects.create(
                         author_name=author_name, book=book)
+
+            # update tags if an tag key is received
+            if "tags" in request.data:
+                # check existing authors against input
+                new_tags = request.data['tags']
+                existing_tags = BookTag.objects.filter(book=book, user=request_user)
+                for booktag in existing_tags:
+                    # check if new input contains this tag name
+                    existing_tag = booktag.tag_name
+
+                    if existing_tag in new_tags:
+                        # remove this tag from new_tags
+                        new_tags.remove(existing_tag)
+                    else:
+                        # remove this booktag entry
+                        booktag.delete()
+
+                # set new tags
+                for booktag in new_tags:
+                    BookTag.objects.create(
+                        tag_name=booktag, user=request_user, book=book)
 
             # update series info if given any
             if 'position_in_series' in request.data:

@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor, Series
+from .models import Book, BookAuthor, Series, BookTag
 from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
@@ -40,9 +40,14 @@ class UpdateBookTests(APITestCase):
         """ if given all fields, and all are new, can update book """
         # make the parameters
         new_title = 'New Book With Unique Title'
+        author_one = "New Author"
+        author_two = "Other Author"
+        tag_one = "fantasy"
+        tag_two = "horror"
         data = {
             "title": new_title,
-            "authors": ["New Author", "Other Author"]
+            "authors": [author_one, author_two],
+            "tags": [tag_one, tag_two]
         }
 
         # set request header
@@ -52,22 +57,35 @@ class UpdateBookTests(APITestCase):
         # make request
         response = self.client.put(url, data, format='json')
 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # should have generated two bookauthor rows
+        filtered_authors_one = BookAuthor.objects.filter(author_name=author_one, book=self.first_book)
+        filtered_authors_two = BookAuthor.objects.filter(author_name=author_two, book=self.first_book)
+        self.assertTrue(filtered_authors_one.exists())
+        self.assertTrue(filtered_authors_two.exists())
+        self.assertEqual(filtered_authors_one[0].author_name, author_one)
+        self.assertEqual(filtered_authors_two[0].author_name, author_two)
+        # should have generated two booktag row
+        filtered_tags_one = BookTag.objects.filter(tag_name=tag_one, user=self.user, book=self.first_book)
+        filtered_tags_two = BookTag.objects.filter(tag_name=tag_two, user=self.user, book=self.first_book)
+        self.assertTrue(filtered_tags_one.exists())
+        self.assertTrue(filtered_tags_two.exists())
+        self.assertEqual(filtered_tags_one[0].tag_name, tag_one)
+        self.assertEqual(filtered_tags_two[0].tag_name, tag_two)
         # determine expected data
         expected_data = {
             'books': [{
                 'id': self.book_id,
                 'title': new_title,
                 'authors': [
-                    'Other Author',
-                    'New Author'
+                    author_two,
+                    author_one
                 ],
                 'position_in_series': None,
                 'series': None,
-                'tags': []
+                'tags': [filtered_tags_two[0].id, filtered_tags_one[0].id]
             }]
         }
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
         # find book in database
