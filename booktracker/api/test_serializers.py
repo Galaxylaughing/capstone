@@ -83,7 +83,7 @@ class BookAndBookAuthorSerializerTests(TestCase):
             'authors': [],
             'position_in_series': None,
             'series': None,
-            'tags': [tag.id]
+            'tags': [tag.tag_name]
         }
 
         book = Book.objects.get(id=book.id)

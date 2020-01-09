@@ -83,7 +83,7 @@ class UpdateBookTests(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
-                'tags': [filtered_tags_two[0].id, filtered_tags_one[0].id]
+                'tags': [filtered_tags_two[0].tag_name, filtered_tags_one[0].tag_name]
             }]
         }
         self.assertEqual(response.data, expected_data)

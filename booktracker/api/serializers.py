@@ -28,7 +28,7 @@ class BookSerializer(serializers.ModelSerializer):
 
     authors = serializers.StringRelatedField(many=True)
     series = serializers.PrimaryKeyRelatedField(read_only=True)
-    tags = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    tags = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Book
