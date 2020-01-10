@@ -30,7 +30,7 @@ class DeleteBookTests(APITestCase):
         # give the book an author
         self.author = "Jane Doe"
         BookAuthor.objects.create(
-            author_name=self.author, book=self.firstBook)
+            author_name=self.author, user=self.user, book=self.firstBook)
 
     def test_can_delete_a_book(self):
         firstId = self.firstBook.id
@@ -86,7 +86,7 @@ class DeleteBookTests(APITestCase):
         # give the book an author
         uniqueAuthor = "Unique Author"
         uniqueBookAuthor = BookAuthor.objects.create(
-            author_name=uniqueAuthor, book=uniqueBook)
+            author_name=uniqueAuthor, user=self.user, book=uniqueBook)
         uniqueAuthorId = uniqueBookAuthor.id
 
         # add token to header

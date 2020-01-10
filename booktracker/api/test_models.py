@@ -64,7 +64,7 @@ class BookAuthorTests(TestCase):
         expectedCount = BookAuthor.objects.count() + 1
 
         BookAuthor.objects.create(
-            author_name="First Last", book=self.book)
+            author_name="First Last", user=self.user, book=self.book)
         filteredBookAuthors = BookAuthor.objects.filter(
             author_name="First Last")
 
@@ -75,7 +75,7 @@ class BookAuthorTests(TestCase):
         author_name = "M.K. Author"
 
         book_author = BookAuthor.objects.create(
-            author_name=author_name, book=self.book)
+            author_name=author_name, user=self.user, book=self.book)
         
         self.assertEqual(str(book_author), author_name)
 

@@ -30,7 +30,7 @@ class GetBookDetailsTest(APITestCase):
             title="First Book", user=self.user)
         # give the book an author
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=firstBook)
+            author_name="Jane Doe", user=self.user, book=firstBook)
 
         firstId = firstBook.id
         expected_data = {
@@ -94,7 +94,7 @@ class GetBookDetailsTest(APITestCase):
             title="First Book", user=self.user)
         # give the book an author
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=firstBook)
+            author_name="Jane Doe", user=self.user, book=firstBook)
 
         firstId = firstBook.id
         

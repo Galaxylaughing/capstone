@@ -33,11 +33,11 @@ class GetBooksTest(APITestCase):
 
         # give the books some authors
         BookAuthor.objects.create(
-            author_name="John Doe", book=firstBook)
+            author_name="John Doe", user=self.user, book=firstBook)
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=firstBook)
+            author_name="Jane Doe", user=self.user, book=firstBook)
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=secondBook)
+            author_name="Jane Doe", user=self.user, book=secondBook)
 
         firstId = firstBook.id
         secondId = secondBook.id
@@ -107,13 +107,13 @@ class GetBooksTest(APITestCase):
         firstBook = Book.objects.create(
             title="First Book", user=newUser)
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=firstBook)
+            author_name="Jane Doe", user=newUser, book=firstBook)
 
         # give the setup user a book
         secondBook = Book.objects.create(
             title="Second Book", user=self.user)
         BookAuthor.objects.create(
-            author_name="John Doe", book=secondBook)
+            author_name="John Doe", user=self.user, book=secondBook)
 
         firstId = firstBook.id
         expected_data = {

@@ -29,11 +29,11 @@ class BookAndBookAuthorSerializerTests(TestCase):
             title="Second Book", user=self.user, position_in_series=1, series=self.series)
 
         BookAuthor.objects.create(
-            author_name="John Doe", book=self.firstBook)
+            author_name="John Doe", user=self.user, book=self.firstBook)
         BookAuthor.objects.create(
-            author_name='Jane Doe', book=self.firstBook)
+            author_name='Jane Doe', user=self.user, book=self.firstBook)
         BookAuthor.objects.create(
-            author_name="Jane Doe", book=self.secondBook)
+            author_name="Jane Doe", user=self.user, book=self.secondBook)
 
     # BOOK SERIALIZER
     def test_bookserializer_returns_expected_data(self):

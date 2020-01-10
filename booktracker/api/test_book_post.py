@@ -154,7 +154,7 @@ class PostBookTest(APITestCase):
         existing_book = Book.objects.create(
             title=title, user=self.user)
         existing_author = BookAuthor.objects.create(
-            author_name=author_name, book=existing_book)
+            author_name=author_name, user=self.user, book=existing_book)
 
         # post parameters
         data = {

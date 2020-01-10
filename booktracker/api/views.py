@@ -77,7 +77,7 @@ def books(request):
             # make new authors
             for author in authors:
                 BookAuthor.objects.create(
-                    author_name=author, book=newBook)
+                    author_name=author, user=requestUser, book=newBook)
 
             if 'tags' in request.data:
                 # make new tags
@@ -189,7 +189,7 @@ def book(request, book_id):
                 # set new authors
                 for author_name in new_authors:
                     BookAuthor.objects.create(
-                        author_name=author_name, book=book)
+                        author_name=author_name, user=request_user, book=book)
 
             # update tags if an tag key is received
             if "tags" in request.data:

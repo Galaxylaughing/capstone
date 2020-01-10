@@ -31,10 +31,10 @@ class UpdateBookTests(APITestCase):
         # give the book two authors
         self.author_one = "Jane Doe"
         BookAuthor.objects.create(
-            author_name=self.author_one, book=self.first_book)
+            author_name=self.author_one, user=self.user, book=self.first_book)
         self.author_two = "John Doe"
         BookAuthor.objects.create(
-            author_name=self.author_two, book=self.first_book)
+            author_name=self.author_two, user=self.user, book=self.first_book)
 
     def test_can_update_with_all_fields_changed(self):
         """ if given all fields, and all are new, can update book """
