@@ -375,33 +375,6 @@ def tags(request):
             }
             tag_list.append(new_tag)
 
-        # #############################################
-        # if len(tag_list) == 0:
-        #     user = User.objects.get(id=17)
-        #     redmond_trivia = Book.objects.get(id=40)
-        #     tag_one = BookTag.objects.create(tag_name="non-fiction", user=user, book=redmond_trivia)
-        #     tag_two = BookTag.objects.create(tag_name="non-fiction/historical", user=user, book=redmond_trivia)
-        #     carousel = Book.objects.get(id=44)
-        #     tag_three = BookTag.objects.create(tag_name="non-fiction", user=user, book=carousel)
-        #     tag_four = BookTag.objects.create(tag_name="fiction", user=user, book=carousel)
-
-        #     tag_list = [
-        #         {
-        #             "tag_name": tag_one.tag_name,
-        #             "books": [redmond_trivia.id, carousel.id]
-        #         },
-        #         {
-        #             "tag_name": tag_two.tag_name,
-        #             "books": [redmond_trivia.id]
-        #         },
-        #         {
-        #             "tag_name": tag_four.tag_name,
-        #             "books": [carousel.id]
-        #         }
-        #     ]
-
-        # #############################################
-
         # add wrapper
         json = {
             "tags": tag_list
@@ -501,27 +474,3 @@ def tag(request, tag_name):
                 "error": "Could not find any tags matching the name '%s'" %(tag_name)
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
-
-    # if request.method == "GET":
-    #     booktag_results = BookTag.objects.filter(id=tag_id)
-    #     if booktag_results.count() > 0:
-    #         booktag = booktag_results[0]
-
-    #         request_user = User.objects.get(auth_token__key=request.auth)
-    #         if booktag.user.id == request_user.id:
-    #             serializer = BookTagSerializer(booktag)
-    #             json = {
-    #                 "tag": serializer.data
-    #             }
-
-    #             return Response(json, status=status.HTTP_200_OK)
-    #         else:
-    #             error_message = {
-    #                 "error": "unauthorized"
-    #             }
-    #             return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
-    #     else:
-    #         error_message = {
-    #             "error": "Could not find tag with ID: %s" %(tag_id)
-    #         }
-    #         return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
