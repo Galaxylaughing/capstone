@@ -221,11 +221,18 @@ def book(request, book_id):
 
             # update series info if given any
             if 'position_in_series' in request.data:
-                book.position_in_series = request.data['position_in_series']
+                position_in_series = request.data['position_in_series']
+                if position_in_series == -1 or position_in_series == "":
+                    book.position_in_series = None
+                else:
+                    book.position_in_series = position_in_series
             if 'series' in request.data:
                 series_id = request.data['series']
-                series = Series.objects.get(id=series_id)
-                book.series = series
+                if series_id == -1 or series_id == "":
+                    book.series = None
+                else:
+                    series = Series.objects.get(id=series_id)
+                    book.series = series
 
             # save updated book
             book.save()

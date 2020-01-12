@@ -451,3 +451,135 @@ class UpdateBookTests(APITestCase):
             }]
         }
         self.assertEqual(response.data, expected_data)
+
+    def test_will_remove_series_if_given_negative_one(self):
+        series = Series.objects.create(
+            name="Cool Series", planned_count=3, user=self.user)
+        newBook = Book.objects.create(
+            title="test series removing", user=self.user, series=series)
+
+        # make the parameters
+        data = {
+            "series": -1
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': newBook.id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBook.id,
+                'title': newBook.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.series, None)
+
+    def test_will_remove_series_if_given_empty_string(self):
+        series = Series.objects.create(
+            name="Cool Series", planned_count=3, user=self.user)
+        newBook = Book.objects.create(
+            title="test series removing", user=self.user, series=series)
+
+        # make the parameters
+        data = {
+            "series": ""
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': newBook.id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBook.id,
+                'title': newBook.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.series, None)
+
+    def test_will_remove_position_if_given_negative_one(self):
+        newBook = Book.objects.create(
+            title="test series removing", user=self.user)
+
+        # make the parameters
+        data = {
+            "position_in_series": -1
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': newBook.id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBook.id,
+                'title': newBook.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.position_in_series, None)
+
+    def test_will_remove_position_if_given_empty_string(self):
+        newBook = Book.objects.create(
+            title="test series removing", user=self.user)
+
+        # make the parameters
+        data = {
+            "position_in_series": ""
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': newBook.id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBook.id,
+                'title': newBook.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.position_in_series, None)
