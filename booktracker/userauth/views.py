@@ -79,5 +79,6 @@ def signup(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def helloworld(request):
   return Response("Hello World", status=status.HTTP_200_OK)
