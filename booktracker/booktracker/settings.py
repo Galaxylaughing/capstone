@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '9-*b&q$w$%%y#5j$87*fpv8@no1_l9*va44*j4590_k+vtf=f='
+# SECRET_KEY = '9-*b&q$w$%%y#5j$87*fpv8@no1_l9*va44*j4590_k+vtf=f='
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,9 +88,9 @@ WSGI_APPLICATION = 'booktracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'booktrackerdb',
-        'USER': 'bookuser',
-        'PASSWORD': 'booktracker',
+        'NAME': os.environ.get("DATABASE_NAME"), #'booktrackerdb',
+        'USER': os.environ.get("DATABASE_USER"), #'bookuser',
+        'PASSWORD': os.environ.get("DATABASE_USER"), #'booktracker',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -158,3 +162,5 @@ STATICFILES_DIRS = (
 # https://devcenter.heroku.com/articles/heroku-postgresql#connecting-with-django
 import dj_database_url
 #DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+if os.environ.get("ENVIRONMENT") == "PROD":
+    DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=True)}
