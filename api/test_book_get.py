@@ -46,6 +46,8 @@ class GetBookDetailsTest(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }
         }

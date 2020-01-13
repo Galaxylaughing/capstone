@@ -39,24 +39,6 @@ def books(request):
                 auth_token__key=request.auth)
             title = request.data['title']
             authors = request.data['authors']
-
-            # # check user's existing books for matches
-            # existing_books = Book.objects.filter(title=title, user=requestUser)
-            # already_authors = BookAuthor.objects.filter(author_name=authors[0])
-            # all_duplicates = {}
-            # if existing_books.count() > 0: 
-            #     # for each book with a matching title and user,               
-            #     for existing_book in existing_books:
-            #         duplicates = []
-            #         # find authors of the book
-            #         found_authors = BookAuthor.objects.filter(book=existing_book)
-            #         # check each found author against each request author
-            #         for found_author in found_authors:
-            #             if found_author.author_name in authors:
-            #                 duplicates.append(found_author)
-            #         all_duplicates[existing_book.title] = duplicates
-
-            #     print(all_duplicates)
                         
             if 'position_in_series' in request.data:
                 position = request.data['position_in_series']
@@ -84,11 +66,19 @@ def books(request):
                 isbn_10 = request.data['isbn_10']
             else:
                 isbn_10 = None
-
             if 'isbn_13' in request.data:
                 isbn_13 = request.data['isbn_13']
             else:
                 isbn_13 = None
+
+            if 'page_count' in request.data:
+                page_count = request.data['page_count']
+            else:
+                page_count = None
+            if 'description' in request.data:
+                description = request.data['description']
+            else:
+                description = None
 
             # make new book
             newBook = Book.objects.create(
@@ -99,7 +89,9 @@ def books(request):
                 publisher=publisher,
                 publication_date=publication_date,
                 isbn_10=isbn_10,
-                isbn_13=isbn_13)
+                isbn_13=isbn_13,
+                page_count=page_count,
+                description=description)
 
             # make new authors
             for author in authors:
@@ -270,6 +262,11 @@ def book(request, book_id):
                 book.isbn_10 = request.data['isbn_10']
             if 'isbn_13' in request.data:
                 book.isbn_13 = request.data['isbn_13']
+
+            if 'page_count' in request.data:
+                book.page_count = request.data['page_count']
+            if 'description' in request.data:
+                book.description = request.data['description']
 
             # save updated book
             book.save()

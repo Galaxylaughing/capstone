@@ -87,6 +87,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': [filtered_tags_two[0].tag_name, filtered_tags_one[0].tag_name]
             }]
         }
@@ -137,6 +139,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -188,6 +192,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -239,6 +245,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -295,6 +303,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -387,6 +397,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': [tag_name]
             }]
         }
@@ -427,6 +439,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': [tag_name]
             }]
         }
@@ -479,6 +493,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': [new_tag_name]
             }]
         }
@@ -511,6 +527,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -549,6 +567,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -585,6 +605,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -621,6 +643,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -663,6 +687,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': publication_date,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -709,6 +735,8 @@ class UpdateBookTests(APITestCase):
                 'publication_date': None,
                 'isbn_10': isbn10,
                 'isbn_13': isbn13,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }

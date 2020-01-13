@@ -61,6 +61,8 @@ class PostBookTest(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': [tag_two, tag_one]
             }]
         }
@@ -110,6 +112,8 @@ class PostBookTest(APITestCase):
                 'publication_date': None,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -218,6 +222,8 @@ class PostBookTest(APITestCase):
                 'publication_date': publication_date,
                 'isbn_10': None,
                 'isbn_13': None,
+                'page_count': None,
+                'description': None,
                 'tags': []
             }]
         }
@@ -262,6 +268,57 @@ class PostBookTest(APITestCase):
                 'publication_date': None,
                 'isbn_10': isbn10,
                 'isbn_13': isbn13,
+                'page_count': None,
+                'description': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, expected_data)
+
+    def test_can_add_a_valid_book_with_pagecount_and_description(self):
+        # make some post parameters
+        title = 'New Book With Very Unique Title'
+        page_count = 717
+        description = """Warbreaker is the story of two sisters, 
+        who happen to be princesses, the God King one of them has to marry, 
+        the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
+        still trying to undo the mistakes he made hundreds of years ago."""
+        data = {
+            "title": title,
+            "authors": ["New Author"],
+            "page_count": page_count,
+            "description": description,
+        }
+
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('books')
+        # make request
+        response = self.client.post(url, data, format='json')
+
+        # find book in database
+        newBook = Book.objects.get(title=title)
+        # grab id
+        newBookId = newBook.id
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBookId,
+                'title': title,
+                'authors': [
+                    'New Author'
+                ],
+                'position_in_series': None,
+                'series': None,
+                'publisher': None,
+                'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
+                'page_count': page_count,
+                'description': description,
                 'tags': []
             }]
         }
