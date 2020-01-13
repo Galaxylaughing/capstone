@@ -50,6 +50,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }, 
             {
@@ -60,6 +62,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
                 ],
                 'position_in_series': 1,
                 'series': series_id,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }
         ]
@@ -83,6 +87,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
             'authors': [],
             'position_in_series': None,
             'series': None,
+            'publisher': None,
+            'publication_date': None,
             'tags': [tag.tag_name]
         }
 

@@ -83,6 +83,8 @@ class UpdateBookTests(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': [filtered_tags_two[0].tag_name, filtered_tags_one[0].tag_name]
             }]
         }
@@ -129,6 +131,8 @@ class UpdateBookTests(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -176,6 +180,8 @@ class UpdateBookTests(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -223,6 +229,8 @@ class UpdateBookTests(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -275,6 +283,8 @@ class UpdateBookTests(APITestCase):
                 ],
                 'position_in_series': 1,
                 'series': series_id,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -363,6 +373,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': [tag_name]
             }]
         }
@@ -399,6 +411,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': [tag_name]
             }]
         }
@@ -447,6 +461,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': [new_tag_name]
             }]
         }
@@ -475,6 +491,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -509,6 +527,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -541,6 +561,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -573,6 +595,8 @@ class UpdateBookTests(APITestCase):
                 'authors': [],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }

@@ -57,6 +57,8 @@ class PostBookTest(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': [tag_two, tag_one]
             }]
         }
@@ -102,6 +104,8 @@ class PostBookTest(APITestCase):
                 ],
                 'position_in_series': 2,
                 'series': series_id,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }]
         }
@@ -172,3 +176,45 @@ class PostBookTest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, expected_error)
+
+    def test_can_add_a_valid_book_with_publisher_and_publication_date(self):
+        # make some post parameters
+        title = 'New Book With Very Unique Title'
+        publisher = "Tor"
+        publication_date = "2019-10-10"
+        data = {
+            "title": title,
+            "authors": ["New Author"],
+            "publisher": publisher,
+            "publication_date": publication_date,
+        }
+
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('books')
+        # make request
+        response = self.client.post(url, data, format='json')
+
+        # find book in database
+        newBook = Book.objects.get(title=title)
+        # grab id
+        newBookId = newBook.id
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBookId,
+                'title': title,
+                'authors': [
+                    'New Author'
+                ],
+                'position_in_series': None,
+                'series': None,
+                'publisher': publisher,
+                'publication_date': publication_date,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, expected_data)

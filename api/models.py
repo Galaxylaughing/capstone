@@ -7,6 +7,16 @@ class Book(models.Model):
     series = models.ForeignKey('Series', related_name='books', on_delete=models.SET_NULL, null=True)
     position_in_series = models.PositiveIntegerField(null=True)
 
+    page_count = models.PositiveIntegerField(null=True)
+    publisher = models.CharField(max_length=255, null=True)
+    publication_date = models.CharField(max_length=50, null=True)
+    description = models.TextField(null=True)
+
+    # the maximum character count, including potential spaces/hyphens in an isbn-13, is probably 17 or 18.
+    # but to be change-safe, I'm going to round up to 20 for both
+    isbn_10 = models.CharField(max_length=20, null=True)
+    isbn_13 = models.CharField(max_length=20, null=True)
+
     def __str__(self):
         return self.title
 

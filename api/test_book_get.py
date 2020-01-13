@@ -42,6 +42,8 @@ class GetBookDetailsTest(APITestCase):
                 ],
                 'position_in_series': None,
                 'series': None,
+                'publisher': None,
+                'publication_date': None,
                 'tags': []
             }
         }
