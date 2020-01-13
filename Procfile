@@ -1,1 +1,1 @@
-web: gunicorn booktracker.booktracker.wsgi:application --log-file -
+web: gunicorn booktracker.wsgi:application --log-file -
