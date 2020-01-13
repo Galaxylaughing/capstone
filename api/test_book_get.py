@@ -79,6 +79,59 @@ class GetBookDetailsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
+    def test_can_get_details_for_existing_book_with_no_pagecount(self):
+        # give the user a book
+        publisher = "Tor"
+        publication_date = "2010-10-10"
+        isbn_10 = "8175257660"
+        isbn_13 = "9788175257665"
+        description = """Warbreaker is the story of two sisters, 
+        who happen to be princesses, the God King one of them has to marry, 
+        the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
+        still trying to undo the mistakes he made hundreds of years ago."""
+
+        secondBook = Book.objects.create(
+            title="Second Book", 
+            user=self.user,
+            publisher=publisher,
+            publication_date=publication_date,
+            isbn_10=isbn_10,
+            isbn_13=isbn_13,
+            description=description)
+
+        # give the book an author
+        BookAuthor.objects.create(
+            author_name="Jane Doe", user=self.user, book=secondBook)
+
+        secondId = secondBook.id
+        expected_data = {
+            'book': {
+                'id': secondId,
+                'title': 'Second Book',
+                'authors': [
+                    'Jane Doe'
+                ],
+                'position_in_series': None,
+                'series': None,
+                'publisher': publisher,
+                'publication_date': publication_date,
+                'isbn_10': isbn_10,
+                'isbn_13': isbn_13,
+                'page_count': None,
+                'description': description,
+                'tags': []
+            }
+        }
+
+        # add token to header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get the API response
+        url = reverse('book', kwargs={'book_id': secondId})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
     def test_cannot_get_details_for_another_users_book(self):
         new_user = User.objects.create(
             username="New User", password="password")
