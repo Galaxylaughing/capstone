@@ -751,3 +751,54 @@ class UpdateBookTests(APITestCase):
         # find publication info
         self.assertEqual(updated_book.isbn_10, isbn10)
         self.assertEqual(updated_book.isbn_13, isbn13)
+
+    def test_can_update_a_book_to_have_pagecount_and_description(self):
+        # make the parameters
+        page_count = 717
+        description = """Warbreaker is the story of two sisters, 
+        who happen to be princesses, the God King one of them has to marry, 
+        the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
+        still trying to undo the mistakes he made hundreds of years ago."""
+        data = {
+            "page_count": page_count,
+            "description": description
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': self.book_id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        title = self.title
+        author_one = self.author_one
+        author_two = self.author_two
+        expected_data = {
+            'books': [{
+                'id': self.book_id,
+                'title': title,
+                'authors': [
+                    author_two,
+                    author_one
+                ],
+                'position_in_series': None,
+                'series': None,
+                'publisher': None,
+                'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
+                'page_count': page_count,
+                'description': description,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.title, title)
+
+        # find publication info
+        self.assertEqual(updated_book.page_count, page_count)
+        self.assertEqual(updated_book.description, description)
