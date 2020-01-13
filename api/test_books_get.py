@@ -115,9 +115,26 @@ class GetBooksTest(APITestCase):
         # get the user's token
         newUserToken = str(newUser.auth_token)
 
+        publisher = "Tor"
+        publication_date = "2010-10-10"
+        isbn_10 = "8175257660"
+        isbn_13 = "9788175257665"
+        page_count = 717
+        description = """Warbreaker is the story of two sisters, 
+        who happen to be princesses, the God King one of them has to marry, 
+        the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
+        still trying to undo the mistakes he made hundreds of years ago."""
+
         # give the new user a book
         firstBook = Book.objects.create(
-            title="First Book", user=newUser)
+            title="First Book", 
+            user=newUser,
+            publisher=publisher,
+            publication_date=publication_date,
+            isbn_10=isbn_10,
+            isbn_13=isbn_13,
+            page_count=page_count,
+            description=description)
         BookAuthor.objects.create(
             author_name="Jane Doe", user=newUser, book=firstBook)
 
@@ -138,12 +155,12 @@ class GetBooksTest(APITestCase):
                     ],
                     'position_in_series': None,
                     'series': None,
-                    'publisher': None,
-                    'publication_date': None,
-                    'isbn_10': None,
-                    'isbn_13': None,
-                    'page_count': None,
-                    'description': None,
+                    'publisher': publisher,
+                    'publication_date': publication_date,
+                    'isbn_10': isbn_10,
+                    'isbn_13': isbn_13,
+                    'page_count': page_count,
+                    'description': description,
                     'tags': []
                 }
             ]
