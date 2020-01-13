@@ -266,6 +266,11 @@ def book(request, book_id):
             if 'publication_date' in request.data:
                 book.publication_date = request.data['publication_date']
 
+            if 'isbn_10' in request.data:
+                book.isbn_10 = request.data['isbn_10']
+            if 'isbn_13' in request.data:
+                book.isbn_13 = request.data['isbn_13']
+
             # save updated book
             book.save()
 
