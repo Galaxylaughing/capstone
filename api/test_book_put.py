@@ -582,7 +582,7 @@ class UpdateBookTests(APITestCase):
 
     def test_will_remove_position_if_given_negative_one(self):
         newBook = Book.objects.create(
-            title="test series removing", user=self.user)
+            title="test series removing", user=self.user, position_in_series=1)
 
         # make the parameters
         data = {
@@ -620,7 +620,7 @@ class UpdateBookTests(APITestCase):
 
     def test_will_remove_position_if_given_empty_string(self):
         newBook = Book.objects.create(
-            title="test series removing", user=self.user)
+            title="test series removing", user=self.user, position_in_series=1)
 
         # make the parameters
         data = {
@@ -802,3 +802,83 @@ class UpdateBookTests(APITestCase):
         # find publication info
         self.assertEqual(updated_book.page_count, page_count)
         self.assertEqual(updated_book.description, description)
+
+    def test_will_remove_pagecount_if_given_negative_one(self):
+        newBook = Book.objects.create(
+            title="test page count removing", 
+            user=self.user,
+            page_count=717)
+
+        # make the parameters
+        data = {
+            "page_count": -1
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': newBook.id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBook.id,
+                'title': newBook.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'publisher': None,
+                'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
+                'page_count': None,
+                'description': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.page_count, None)
+
+    def test_will_remove_pagecount_if_given_empty_string(self):
+        newBook = Book.objects.create(
+            title="test page count removing", 
+            user=self.user,
+            page_count=717)
+
+        # make the parameters
+        data = {
+            "page_count": ""
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': newBook.id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBook.id,
+                'title': newBook.title,
+                'authors': [],
+                'position_in_series': None,
+                'series': None,
+                'publisher': None,
+                'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
+                'page_count': None,
+                'description': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.page_count, None)

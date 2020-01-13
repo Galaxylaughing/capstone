@@ -264,7 +264,12 @@ def book(request, book_id):
                 book.isbn_13 = request.data['isbn_13']
 
             if 'page_count' in request.data:
-                book.page_count = request.data['page_count']
+                page_count = request.data['page_count']
+                if page_count == -1 or page_count == "":
+                    book.page_count = None
+                else:
+                    book.page_count = page_count
+
             if 'description' in request.data:
                 book.description = request.data['description']
 
