@@ -249,6 +249,11 @@ def book(request, book_id):
                     series = Series.objects.get(id=series_id)
                     book.series = series
 
+            if 'publisher' in request.data:
+                book.publisher = request.data['publisher']
+            if 'publication_date' in request.data:
+                book.publication_date = request.data['publication_date']
+
             # save updated book
             book.save()
 

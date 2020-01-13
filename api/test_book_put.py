@@ -304,7 +304,7 @@ class UpdateBookTests(APITestCase):
         self.assertTrue(author_one in author_values)
         self.assertTrue(author_two in author_values)
 
-        # find the series infor
+        # find the series info
         self.assertEqual(updated_book.position_in_series, 1)
         self.assertEqual(updated_book.series, series)
 
@@ -607,3 +607,47 @@ class UpdateBookTests(APITestCase):
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
         self.assertEqual(updated_book.position_in_series, None)
+
+    def test_can_update_a_book_to_have_publisher_publication_date(self):
+        # make the parameters
+        publisher = "Tor"
+        publication_date = "2010-10-10"
+        data = {
+            "publisher": publisher,
+            "publication_date": publication_date
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': self.book_id})
+        response = self.client.put(url, data, format='json')
+
+        # determine expected data
+        title = self.title
+        author_one = self.author_one
+        author_two = self.author_two
+        expected_data = {
+            'books': [{
+                'id': self.book_id,
+                'title': title,
+                'authors': [
+                    author_two,
+                    author_one
+                ],
+                'position_in_series': None,
+                'series': None,
+                'publisher': publisher,
+                'publication_date': publication_date,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # find book in database
+        updated_book = Book.objects.get(id=self.book_id)
+        self.assertEqual(updated_book.title, title)
+
+        # find publication info
+        self.assertEqual(updated_book.publisher, publisher)
+        self.assertEqual(updated_book.publication_date, publication_date)
