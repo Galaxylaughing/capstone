@@ -24,16 +24,27 @@ class BookAndBookAuthorSerializerTests(TestCase):
         series_name = "Cool Series"
         planned_count = 3
         self.series = Series.objects.create(
-            name=series_name, planned_count=planned_count, user=self.user)
+            name=series_name, 
+            planned_count=planned_count, 
+            user=self.user)
         self.secondBook = Book.objects.create(
-            title="Second Book", user=self.user, position_in_series=1, series=self.series)
+            title="Second Book", 
+            user=self.user, 
+            position_in_series=1, 
+            series=self.series)
 
         BookAuthor.objects.create(
-            author_name="John Doe", user=self.user, book=self.firstBook)
+            author_name="John Doe", 
+            user=self.user, 
+            book=self.firstBook)
         BookAuthor.objects.create(
-            author_name='Jane Doe', user=self.user, book=self.firstBook)
+            author_name='Jane Doe', 
+            user=self.user, 
+            book=self.firstBook)
         BookAuthor.objects.create(
-            author_name="Jane Doe", user=self.user, book=self.secondBook)
+            author_name="Jane Doe", 
+            user=self.user, 
+            book=self.secondBook)
 
     # BOOK SERIALIZER
     def test_bookserializer_returns_expected_data(self):
@@ -52,6 +63,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
                 'series': None,
                 'publisher': None,
                 'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
                 'tags': []
             }, 
             {
@@ -64,6 +77,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
                 'series': series_id,
                 'publisher': None,
                 'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
                 'tags': []
             }
         ]
@@ -89,6 +104,8 @@ class BookAndBookAuthorSerializerTests(TestCase):
             'series': None,
             'publisher': None,
             'publication_date': None,
+            'isbn_10': None,
+            'isbn_13': None,
             'tags': [tag.tag_name]
         }
 

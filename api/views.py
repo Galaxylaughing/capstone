@@ -80,6 +80,16 @@ def books(request):
             else:
                 publication_date = None
 
+            if 'isbn_10' in request.data:
+                isbn_10 = request.data['isbn_10']
+            else:
+                isbn_10 = None
+
+            if 'isbn_13' in request.data:
+                isbn_13 = request.data['isbn_13']
+            else:
+                isbn_13 = None
+
             # make new book
             newBook = Book.objects.create(
                 title=title, 
@@ -87,7 +97,9 @@ def books(request):
                 position_in_series=position, 
                 series=series,
                 publisher=publisher,
-                publication_date=publication_date)
+                publication_date=publication_date,
+                isbn_10=isbn_10,
+                isbn_13=isbn_13)
 
             # make new authors
             for author in authors:

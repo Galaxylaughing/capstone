@@ -53,6 +53,8 @@ class GetBooksTest(APITestCase):
                     'series': None,
                     'publisher': None,
                     'publication_date': None,
+                    'isbn_10': None,
+                    'isbn_13': None,
                     'tags': []
                 },
                 {
@@ -66,6 +68,8 @@ class GetBooksTest(APITestCase):
                     'series': None,
                     'publisher': None,
                     'publication_date': None,
+                    'isbn_10': None,
+                    'isbn_13': None,
                     'tags': []
                 }
             ]
@@ -132,6 +136,8 @@ class GetBooksTest(APITestCase):
                     'series': None,
                     'publisher': None,
                     'publication_date': None,
+                    'isbn_10': None,
+                    'isbn_13': None,
                     'tags': []
                 }
             ]

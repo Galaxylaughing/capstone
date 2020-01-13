@@ -59,6 +59,8 @@ class PostBookTest(APITestCase):
                 'series': None,
                 'publisher': None,
                 'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
                 'tags': [tag_two, tag_one]
             }]
         }
@@ -106,6 +108,8 @@ class PostBookTest(APITestCase):
                 'series': series_id,
                 'publisher': None,
                 'publication_date': None,
+                'isbn_10': None,
+                'isbn_13': None,
                 'tags': []
             }]
         }
@@ -212,6 +216,52 @@ class PostBookTest(APITestCase):
                 'series': None,
                 'publisher': publisher,
                 'publication_date': publication_date,
+                'isbn_10': None,
+                'isbn_13': None,
+                'tags': []
+            }]
+        }
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, expected_data)
+
+    def test_can_add_a_valid_book_with_isbns(self):
+        # make some post parameters
+        title = 'New Book With Very Unique Title'
+        isbn10 = "8175257660"
+        isbn13 = "9788175257665"
+        data = {
+            "title": title,
+            "authors": ["New Author"],
+            "isbn_10": isbn10,
+            "isbn_13": isbn13,
+        }
+
+        # set request header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        # get url
+        url = reverse('books')
+        # make request
+        response = self.client.post(url, data, format='json')
+
+        # find book in database
+        newBook = Book.objects.get(title=title)
+        # grab id
+        newBookId = newBook.id
+        # determine expected data
+        expected_data = {
+            'books': [{
+                'id': newBookId,
+                'title': title,
+                'authors': [
+                    'New Author'
+                ],
+                'position_in_series': None,
+                'series': None,
+                'publisher': None,
+                'publication_date': None,
+                'isbn_10': isbn10,
+                'isbn_13': isbn13,
                 'tags': []
             }]
         }
