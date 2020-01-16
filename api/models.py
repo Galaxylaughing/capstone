@@ -1,4 +1,5 @@
 from django.db import models
+import django.utils.timezone
 
 # Create your models here.
 class Book(models.Model):
@@ -71,4 +72,17 @@ class BookTag(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['tag_name'], name='tag_name_index'),
+        ]
+
+class BookStatus(models.Model):
+    book = models.ForeignKey(Book, related_name="statuses", on_delete=models.CASCADE)
+    date = models.DateTimeField(default=django.utils.timezone.now)
+    status_code = models.CharField(max_length=4, choices=Book.STATUS_CHOICES)
+
+    def __str__(self):
+        return self.status_code
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['status_code'], name='status_code_index')
         ]
