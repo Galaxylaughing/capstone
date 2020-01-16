@@ -33,64 +33,144 @@ class BookAndBookAuthorSerializerTests(TestCase):
             position_in_series=1, 
             series=self.series)
 
-        BookAuthor.objects.create(
+        self.firstBookAuthorOne = BookAuthor.objects.create(
             author_name="John Doe", 
             user=self.user, 
             book=self.firstBook)
-        BookAuthor.objects.create(
+        self.firstBookAuthorTwo = BookAuthor.objects.create(
             author_name='Jane Doe', 
             user=self.user, 
             book=self.firstBook)
-        BookAuthor.objects.create(
+        self.secondBookAuthor = BookAuthor.objects.create(
             author_name="Jane Doe", 
             user=self.user, 
             book=self.secondBook)
 
     # BOOK SERIALIZER
-    def test_bookserializer_returns_expected_data(self):
-        firstId = self.firstBook.id
-        secondId = self.secondBook.id
-        series_id = self.series.id
-        expected_data = [
-            {
-                'id': firstId,
-                'title': 'First Book',
-                'authors': [
-                    'Jane Doe',
-                    'John Doe'
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }, 
-            {
-                'id': secondId,
-                'title': 'Second Book',
-                'authors': [
-                    'Jane Doe'
-                ],
-                'position_in_series': 1,
-                'series': series_id,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }
-        ]
-
+    def test_bookserializer_returns_multiple_books(self):
         bookList = Book.objects.all()
         serializer = BookSerializer(bookList, many=True)
 
-        self.assertEqual(serializer.data, expected_data)
+        self.assertEqual(serializer.data[0]['id'], self.firstBook.id)
+        self.assertEqual(serializer.data[0]['title'], self.firstBook.title)
+
+        self.assertEqual(serializer.data[1]['id'], self.secondBook.id)
+        self.assertEqual(serializer.data[1]['title'], self.secondBook.title)
+
+    def test_serializer_will_return_title(self):
+        book = Book.objects.create(
+            title="Serialize Title Test Book", user=self.user)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['title'], book.title)
+
+    def test_serializer_will_return_authors(self):
+        author_one = self.firstBookAuthorOne
+        author_two = self.firstBookAuthorTwo
+
+        book = self.firstBook
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['authors'][0], author_two.author_name)
+        self.assertEqual(serializer.data['authors'][1], author_one.author_name)
+
+    def test_serializer_will_return_publisher(self):
+        publisher = "Tor Books"
+        book = Book.objects.create(
+            title="Serialize Publisher Test Book", 
+            user=self.user,
+            publisher=publisher)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['publisher'], book.publisher)
+
+    def test_serializer_will_return_publication_date(self):
+        publication_date = "2018-10-15"
+        book = Book.objects.create(
+            title="Serialize Publication Date Test Book", 
+            user=self.user,
+            publication_date=publication_date)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['publication_date'], book.publication_date)
+
+    def test_serializer_will_return_isbn_10(self):
+        isbn_10 = "8175257660"
+        book = Book.objects.create(
+            title="Serialize ISBN 10 Test Book", 
+            user=self.user,
+            isbn_10=isbn_10)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['isbn_10'], book.isbn_10)
+
+    def test_serializer_will_return_isbn_13(self):
+        isbn_13 = "9788175257665"
+        book = Book.objects.create(
+            title="Serialize ISBN 13 Test Book", 
+            user=self.user,
+            isbn_13=isbn_13)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['isbn_13'], book.isbn_13)
+
+    def test_serializer_will_return_page_count(self):
+        page_count = 214
+        book = Book.objects.create(
+            title="Serialize Page Count Test Book", 
+            user=self.user,
+            page_count=page_count)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['page_count'], book.page_count)
+
+    def test_serializer_will_return_description(self):
+        description = """Warbreaker is the story of two sisters, 
+        who happen to be princesses, the God King one of them has to marry, 
+        the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
+        still trying to undo the mistakes he made hundreds of years ago."""
+        book = Book.objects.create(
+            title="Serialize Description Test Book", 
+            user=self.user,
+            description=description)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['description'], book.description)
+
+    def test_serializer_will_return_current_status(self):
+        current_status = Book.DISCARDED
+        book = Book.objects.create(
+            title="Serialize Current Status Test Book", 
+            user=self.user,
+            current_status=current_status)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['current_status'], book.current_status)
 
     def test_serializer_will_return_tags(self):
         user = User.objects.create(
@@ -100,25 +180,12 @@ class BookAndBookAuthorSerializerTests(TestCase):
         tag = BookTag.objects.create(
             tag_name="fiction", user=user, book=book)
 
-        expected_data = {
-            'id': book.id,
-            'title': book.title,
-            'authors': [],
-            'position_in_series': None,
-            'series': None,
-            'publisher': None,
-            'publication_date': None,
-            'isbn_10': None,
-            'isbn_13': None,
-            'page_count': None,
-            'description': None,
-            'tags': [tag.tag_name]
-        }
-
         book = Book.objects.get(id=book.id)
         serializer = BookSerializer(book)
 
-        self.assertEqual(serializer.data, expected_data)
+        expected_tags = [tag.tag_name]
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['tags'], expected_tags)
 
     # BOOK-AUTHOR SERIALIZER
     def test_bookauthorserializer_returns_expected_data(self):
