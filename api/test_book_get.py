@@ -67,6 +67,7 @@ class GetBookDetailsTest(APITestCase):
                 'isbn_13': isbn_13,
                 'page_count': page_count,
                 'description': description,
+                'current_status': Book.WANTTOREAD,
                 'tags': []
             }
         }

@@ -36,9 +36,7 @@ class UpdateBookTests(APITestCase):
         BookAuthor.objects.create(
             author_name=self.author_two, user=self.user, book=self.first_book)
 
-    def test_can_update_with_all_fields_changed(self):
-        """ if given all fields, and all are new, can update book """
-        # make the parameters
+    def test_can_update_with_fields_changed(self):
         new_title = 'New Book With Unique Title'
         author_one = "New Author"
         author_two = "Other Author"
@@ -72,27 +70,11 @@ class UpdateBookTests(APITestCase):
         self.assertTrue(filtered_tags_two.exists())
         self.assertEqual(filtered_tags_one[0].tag_name, tag_one)
         self.assertEqual(filtered_tags_two[0].tag_name, tag_two)
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': new_title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': [filtered_tags_two[0].tag_name, filtered_tags_one[0].tag_name]
-            }]
-        }
-        self.assertEqual(response.data, expected_data)
+        
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['title'], new_title)
+        self.assertEqual(response.data['books'][0]['authors'], [author_two, author_one])
+        self.assertEqual(response.data['books'][0]['tags'], [filtered_tags_two[0].tag_name, filtered_tags_one[0].tag_name])
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -106,100 +88,22 @@ class UpdateBookTests(APITestCase):
         self.assertTrue("New Author" in author_values)
         self.assertTrue("Other Author" in author_values)
 
-    def test_can_update_with_only_some_fields_changed(self):
-        """ if given all fields, but only some are new, can update book """
-        # make the parameters
-        new_title = 'New Book With Unique Title'
-        author_one = self.author_one
-        author_two = self.author_two
-        data = {
-            "title": new_title,
-            "authors": [author_one, author_two]
-        }
-
-        # set request header
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
-        url = reverse('book', kwargs={'book_id': self.book_id})
-        # make request
-        response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': new_title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
-
-        # find book in database
-        updated_book = Book.objects.get(id=self.book_id)
-        self.assertEqual(updated_book.title, new_title)
-
-        # find authors of this book
-        authors = BookAuthor.objects.filter(book=updated_book)
-        author_values = authors.values_list('author_name', flat=True)
-        
-        self.assertEqual(authors.count(), 2)
-        self.assertTrue(author_one in author_values)
-        self.assertTrue(author_two in author_values)
-
     def test_can_update_with_only_new_authors_provided(self):
         """ if given only the author field, and it is new, can update book """
-        # make the parameters
-        # not changing title
         author_one = self.author_one
         author_two = self.author_two
         data = {
             "authors": [author_one, author_two]
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('book', kwargs={'book_id': self.book_id})
-        # make request
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': self.title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['title'], self.title)
+        self.assertEqual(response.data['books'][0]['authors'], [author_two, author_one])
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -221,50 +125,17 @@ class UpdateBookTests(APITestCase):
             "title": new_title
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('book', kwargs={'book_id': self.book_id})
-        # make request
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        author_one = self.author_one
-        author_two = self.author_two
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': new_title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['title'], new_title)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
         self.assertEqual(updated_book.title, new_title)
-
-        # find authors of this book
-        authors = BookAuthor.objects.filter(book=updated_book)
-        author_values = authors.values_list('author_name', flat=True)
-        
-        self.assertEqual(authors.count(), 2)
-        self.assertTrue(author_one in author_values)
-        self.assertTrue(author_two in author_values)
 
     def test_can_update_a_book_to_have_series(self):
         """ if given only the series fields, and it is new, can update book """
@@ -278,51 +149,17 @@ class UpdateBookTests(APITestCase):
             "series": series_id
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('book', kwargs={'book_id': self.book_id})
-        # make request
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        title = self.title
-        author_one = self.author_one
-        author_two = self.author_two
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': 1,
-                'series': series_id,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['position_in_series'], data["position_in_series"])
+        self.assertEqual(response.data['books'][0]['series'], data["series"])
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
-        self.assertEqual(updated_book.title, title)
-
-        # find authors of this book
-        authors = BookAuthor.objects.filter(book=updated_book)
-        author_values = authors.values_list('author_name', flat=True)
-        
-        self.assertEqual(authors.count(), 2)
-        self.assertTrue(author_one in author_values)
-        self.assertTrue(author_two in author_values)
 
         # find the series info
         self.assertEqual(updated_book.position_in_series, 1)
@@ -384,25 +221,10 @@ class UpdateBookTests(APITestCase):
 
         self.assertTrue(filtered_tags_after.exists())
         self.assertEqual(filtered_tags_after.count(), 1)
-        
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': book.id,
-                'title': book.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': [tag_name]
-            }]
-        }
-        self.assertEqual(response.data, expected_data)
+
+        self.assertEqual(response.data['books'][0]['id'], book.id)
+        self.assertEqual(response.data['books'][0]['title'], book.title)
+        self.assertEqual(response.data['books'][0]['tags'], [tag_name])
 
     def test_will_not_create_duplicate_tags(self):
         # create new book
@@ -426,25 +248,10 @@ class UpdateBookTests(APITestCase):
 
         self.assertTrue(filtered_tags_after.exists())
         self.assertEqual(filtered_tags_after.count(), 1)
-        
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': book.id,
-                'title': book.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': [tag_name]
-            }]
-        }
-        self.assertEqual(response.data, expected_data)
+
+        self.assertEqual(response.data['books'][0]['id'], book.id)
+        self.assertEqual(response.data['books'][0]['title'], book.title)
+        self.assertEqual(response.data['books'][0]['tags'], [tag_name])
 
     def test_will_remove_tags(self):
         # create new book
@@ -480,25 +287,10 @@ class UpdateBookTests(APITestCase):
         # should have removed old tag
         filtered_tags_after_2 = BookTag.objects.filter(tag_name=tag_name, user=self.user, book=book)
         self.assertFalse(filtered_tags_after_2.exists())
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': book.id,
-                'title': book.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': [new_tag_name]
-            }]
-        }
-        self.assertEqual(response.data, expected_data)
+        
+        self.assertEqual(response.data['books'][0]['id'], book.id)
+        self.assertEqual(response.data['books'][0]['title'], book.title)
+        self.assertEqual(response.data['books'][0]['tags'], [new_tag_name])
 
     def test_will_remove_series_if_given_negative_one(self):
         series = Series.objects.create(
@@ -514,27 +306,11 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': newBook.id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBook.id,
-                'title': newBook.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['series'], None)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -554,27 +330,11 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': newBook.id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBook.id,
-                'title': newBook.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['series'], None)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -592,27 +352,11 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': newBook.id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBook.id,
-                'title': newBook.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['position_in_series'], None)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -630,27 +374,11 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': newBook.id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBook.id,
-                'title': newBook.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['position_in_series'], None)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -668,37 +396,17 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': self.book_id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        title = self.title
-        author_one = self.author_one
-        author_two = self.author_two
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': publisher,
-                'publication_date': publication_date,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['title'], self.title)
+        self.assertEqual(response.data['books'][0]['authors'], [self.author_two, self.author_one])
+        self.assertEqual(response.data['books'][0]['publisher'], publisher)
+        self.assertEqual(response.data['books'][0]['publication_date'], publication_date)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
-        self.assertEqual(updated_book.title, title)
+        self.assertEqual(updated_book.title, self.title)
 
         # find publication info
         self.assertEqual(updated_book.publisher, publisher)
@@ -716,37 +424,17 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': self.book_id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        title = self.title
-        author_one = self.author_one
-        author_two = self.author_two
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': isbn10,
-                'isbn_13': isbn13,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['title'], self.title)
+        self.assertEqual(response.data['books'][0]['authors'], [self.author_two, self.author_one])
+        self.assertEqual(response.data['books'][0]['isbn_10'], isbn10)
+        self.assertEqual(response.data['books'][0]['isbn_13'], isbn13)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
-        self.assertEqual(updated_book.title, title)
+        self.assertEqual(updated_book.title, self.title)
 
         # find publication info
         self.assertEqual(updated_book.isbn_10, isbn10)
@@ -767,37 +455,17 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': self.book_id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        title = self.title
-        author_one = self.author_one
-        author_two = self.author_two
-        expected_data = {
-            'books': [{
-                'id': self.book_id,
-                'title': title,
-                'authors': [
-                    author_two,
-                    author_one
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': page_count,
-                'description': description,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], self.book_id)
+        self.assertEqual(response.data['books'][0]['title'], self.title)
+        self.assertEqual(response.data['books'][0]['authors'], [self.author_two, self.author_one])
+        self.assertEqual(response.data['books'][0]['page_count'], page_count)
+        self.assertEqual(response.data['books'][0]['description'], description)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
-        self.assertEqual(updated_book.title, title)
+        self.assertEqual(updated_book.title, self.title)
 
         # find publication info
         self.assertEqual(updated_book.page_count, page_count)
@@ -817,27 +485,11 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': newBook.id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBook.id,
-                'title': newBook.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['page_count'], None)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)
@@ -857,27 +509,11 @@ class UpdateBookTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         url = reverse('book', kwargs={'book_id': newBook.id})
         response = self.client.put(url, data, format='json')
-
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBook.id,
-                'title': newBook.title,
-                'authors': [],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['page_count'], None)
 
         # find book in database
         updated_book = Book.objects.get(id=self.book_id)

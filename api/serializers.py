@@ -43,6 +43,7 @@ class BookSerializer(serializers.ModelSerializer):
         'isbn_13', 
         'page_count',
         'description',
+        'current_status',
         'tags']
 
 class SeriesSerializer(serializers.ModelSerializer):

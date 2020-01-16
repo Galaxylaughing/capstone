@@ -26,67 +26,38 @@ class GetBooksTest(APITestCase):
 
     def test_can_access_a_users_books(self):
         # give the user some books
-        firstBook = Book.objects.create(
+        book_one = Book.objects.create(
             title="First Book", user=self.user)
-        secondBook = Book.objects.create(
+        book_two = Book.objects.create(
             title="Second Book", user=self.user)
 
         # give the books some authors
-        BookAuthor.objects.create(
-            author_name="John Doe", user=self.user, book=firstBook)
-        BookAuthor.objects.create(
-            author_name="Jane Doe", user=self.user, book=firstBook)
-        BookAuthor.objects.create(
-            author_name="Jane Doe", user=self.user, book=secondBook)
+        book_one_author_one = BookAuthor.objects.create(
+            author_name="John Doe", 
+            user=self.user, 
+            book=book_one)
+        book_one_author_two = BookAuthor.objects.create(
+            author_name="Jane Doe", 
+            user=self.user, 
+            book=book_one)
+        book_two_author_one = BookAuthor.objects.create(
+            author_name="Jane Doe",
+            user=self.user, 
+            book=book_two)
 
-        firstId = firstBook.id
-        secondId = secondBook.id
-        expected_data = {
-            'books': [
-                {
-                    'id': secondId,
-                    'title': 'Second Book',
-                    'authors': [
-                        'Jane Doe'
-                    ],
-                    'position_in_series': None,
-                    'series': None,
-                    'publisher': None,
-                    'publication_date': None,
-                    'isbn_10': None,
-                    'isbn_13': None,
-                    'page_count': None,
-                    'description': None,
-                    'tags': []
-                },
-                {
-                    'id': firstId,
-                    'title': 'First Book',
-                    'authors': [
-                        'Jane Doe', 
-                        'John Doe'
-                    ],
-                    'position_in_series': None,
-                    'series': None,
-                    'publisher': None,
-                    'publication_date': None,
-                    'isbn_10': None,
-                    'isbn_13': None,
-                    'page_count': None,
-                    'description': None,
-                    'tags': []
-                }
-            ]
-        }
-
-        # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get the API response
         url = reverse('books')
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][1]['id'], book_one.id)
+        self.assertEqual(response.data['books'][1]['title'], book_one.title)
+        self.assertEqual(response.data['books'][1]['authors'][0], book_one_author_two.author_name)
+        self.assertEqual(response.data['books'][1]['authors'][1], book_one_author_one.author_name)
+
+        self.assertEqual(response.data['books'][0]['id'], book_two.id)
+        self.assertEqual(response.data['books'][0]['title'], book_two.title)
+        self.assertEqual(response.data['books'][0]['authors'][0], book_two_author_one.author_name)
 
     def test_returns_empty_list_if_no_books(self):
         expected_data = {"books": []}
@@ -109,68 +80,50 @@ class GetBooksTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_can_access_a_specific_users_books(self):
-        # create a new user
-        newUser = User.objects.create(
-            username='Caspar', password='password')
-        # get the user's token
-        newUserToken = str(newUser.auth_token)
+        new_user = User.objects.create(
+            username='Caspar', 
+            password='password')
+        new_user_token = str(new_user.auth_token)
 
+        # give the new user a book
         publisher = "Tor"
         publication_date = "2010-10-10"
         isbn_10 = "8175257660"
         isbn_13 = "9788175257665"
         page_count = 717
-        description = """Warbreaker is the story of two sisters, 
-        who happen to be princesses, the God King one of them has to marry, 
-        the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
-        still trying to undo the mistakes he made hundreds of years ago."""
-
-        # give the new user a book
-        firstBook = Book.objects.create(
+        new_book = Book.objects.create(
             title="First Book", 
-            user=newUser,
+            user=new_user,
             publisher=publisher,
             publication_date=publication_date,
             isbn_10=isbn_10,
             isbn_13=isbn_13,
-            page_count=page_count,
-            description=description)
-        BookAuthor.objects.create(
-            author_name="Jane Doe", user=newUser, book=firstBook)
+            page_count=page_count)
+        new_author = BookAuthor.objects.create(
+            author_name="Jane Doe", 
+            user=new_user, 
+            book=new_book)
 
         # give the setup user a book
-        secondBook = Book.objects.create(
-            title="Second Book", user=self.user)
+        old_book = Book.objects.create(
+            title="Second Book", 
+            user=self.user)
         BookAuthor.objects.create(
-            author_name="John Doe", user=self.user, book=secondBook)
+            author_name="John Doe", 
+            user=self.user, 
+            book=old_book)
 
-        firstId = firstBook.id
-        expected_data = {
-            "books": [
-                {
-                    'id': firstId,
-                    'title': 'First Book',
-                    'authors': [
-                        'Jane Doe'
-                    ],
-                    'position_in_series': None,
-                    'series': None,
-                    'publisher': publisher,
-                    'publication_date': publication_date,
-                    'isbn_10': isbn_10,
-                    'isbn_13': isbn_13,
-                    'page_count': page_count,
-                    'description': description,
-                    'tags': []
-                }
-            ]
-        }
-
-        # add token to header
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + newUserToken)
-        # get the API response
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + new_user_token)
         url = reverse('books')
         response = self.client.get(url, format='json')
 
+        # new user should only see their book
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], new_book.id)
+        self.assertEqual(response.data['books'][0]['title'], new_book.title)
+        self.assertEqual(response.data['books'][0]['publisher'], new_book.publisher)
+        self.assertEqual(response.data['books'][0]['publication_date'], new_book.publication_date)
+        self.assertEqual(response.data['books'][0]['isbn_10'], new_book.isbn_10)
+        self.assertEqual(response.data['books'][0]['isbn_13'], new_book.isbn_13)
+        self.assertEqual(response.data['books'][0]['page_count'], new_book.page_count)
+        self.assertEqual(response.data['books'][0]['authors'][0], new_author.author_name)

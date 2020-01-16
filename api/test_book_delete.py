@@ -33,39 +33,18 @@ class DeleteBookTests(APITestCase):
             author_name=self.author, user=self.user, book=self.firstBook)
 
     def test_can_delete_a_book(self):
-        firstId = self.firstBook.id
-        firstTitle = self.title
-        firstAuthor = self.author
-        expected_data = {
-            'book': {
-                'id': firstId,
-                'title': firstTitle,
-                'authors': [
-                    firstAuthor
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }
-        }
-
-        # add token to header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get the API response
-        url = reverse('book', kwargs={'book_id': firstId})
+        url = reverse('book', kwargs={'book_id': self.firstBook.id})
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        # should return deleted book's details
+        self.assertEqual(response.data['book']['id'], self.firstBook.id)
+        self.assertEqual(response.data['book']['title'], self.firstBook.title)
+        self.assertEqual(response.data['book']['authors'][0], self.author)
 
         # check that I can't find it in database
-        filteredBooks = Book.objects.filter(id=firstId)
+        filteredBooks = Book.objects.filter(id=self.firstBook.id)
         self.assertEqual(filteredBooks.count(), 0)
 
     def test_returns_error_if_invalid_bookid(self):

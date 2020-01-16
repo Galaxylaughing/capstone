@@ -25,7 +25,6 @@ class PostBookTest(APITestCase):
         self.token = str(self.user.auth_token)
 
     def test_can_add_a_valid_book(self):
-        # make some post parameters
         title = 'New Book With Unique Title'
         tag_one = "new"
         tag_two = "very-unique"
@@ -35,50 +34,25 @@ class PostBookTest(APITestCase):
             "tags": [tag_one, tag_two]
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('books')
-        # make request
         response = self.client.post(url, data, format='json')
 
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # find book in database
         newBook = Book.objects.get(title=title)
-        # grab id
-        newBookId = newBook.id
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBookId,
-                'title': title,
-                'authors': [
-                    'Other Author',
-                    'New Author'
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': [tag_two, tag_one]
-            }]
-        }
-        
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['authors'], ["Other Author", "New Author"])
+        self.assertEqual(response.data['books'][0]['tags'], [tag_two, tag_one])
 
     def test_can_add_a_valid_book_with_series(self):
-        # make a new seires
         series_name = "Cool Series"
         planned_count = 3
         series = Series.objects.create(
             name=series_name, planned_count=planned_count, user=self.user)
         series_id = series.id
 
-        # make some post parameters
         title = 'New Book With Very Unique Title'
         data = {
             "title": title,
@@ -87,39 +61,17 @@ class PostBookTest(APITestCase):
             "series": series_id
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('books')
-        # make request
         response = self.client.post(url, data, format='json')
 
-        # find book in database
-        newBook = Book.objects.get(title=title)
-        # grab id
-        newBookId = newBook.id
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBookId,
-                'title': title,
-                'authors': [
-                    'New Author'
-                ],
-                'position_in_series': 2,
-                'series': series_id,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
-        
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data, expected_data)
+        newBook = Book.objects.get(title=title)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['authors'], data['authors'])
+        self.assertEqual(response.data['books'][0]['position_in_series'], newBook.position_in_series)
+        self.assertEqual(response.data['books'][0]['series'], newBook.series.id)
 
     def test_cannot_add_a_book_without_authentication(self):
         # make some post parameters
@@ -158,35 +110,7 @@ class PostBookTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, expected_error)
 
-    @skip("Not sure this is worth it, considering possible real life edge cases")
-    def test_cannot_add_duplicate_title_author_combinations(self):
-        title = 'A Generic Book Title'
-        author_name = "Author"
-
-        existing_book = Book.objects.create(
-            title=title, user=self.user)
-        existing_author = BookAuthor.objects.create(
-            author_name=author_name, user=self.user, book=existing_book)
-
-        # post parameters
-        data = {
-            "title": title,
-            "authors": [author_name]
-        }
-
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('books')
-        response = self.client.post(url, data, format='json')
-
-        expected_error = {
-            "error": "Book with provided title and author(s) already exists"
-        }
-        
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, expected_error)
-
     def test_can_add_a_valid_book_with_publisher_and_publication_date(self):
-        # make some post parameters
         title = 'New Book With Very Unique Title'
         publisher = "Tor"
         publication_date = "2019-10-10"
@@ -197,42 +121,19 @@ class PostBookTest(APITestCase):
             "publication_date": publication_date,
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('books')
-        # make request
         response = self.client.post(url, data, format='json')
 
-        # find book in database
-        newBook = Book.objects.get(title=title)
-        # grab id
-        newBookId = newBook.id
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBookId,
-                'title': title,
-                'authors': [
-                    'New Author'
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': publisher,
-                'publication_date': publication_date,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
-        
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data, expected_data)
+        newBook = Book.objects.get(title=title)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['authors'], data['authors'])
+        self.assertEqual(response.data['books'][0]['publisher'], publisher)
+        self.assertEqual(response.data['books'][0]['publication_date'], publication_date)
 
     def test_can_add_a_valid_book_with_isbns(self):
-        # make some post parameters
         title = 'New Book With Very Unique Title'
         isbn10 = "8175257660"
         isbn13 = "9788175257665"
@@ -243,39 +144,17 @@ class PostBookTest(APITestCase):
             "isbn_13": isbn13,
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('books')
-        # make request
         response = self.client.post(url, data, format='json')
 
-        # find book in database
-        newBook = Book.objects.get(title=title)
-        # grab id
-        newBookId = newBook.id
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBookId,
-                'title': title,
-                'authors': [
-                    'New Author'
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': isbn10,
-                'isbn_13': isbn13,
-                'page_count': None,
-                'description': None,
-                'tags': []
-            }]
-        }
-        
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data, expected_data)
+        newBook = Book.objects.get(title=title)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['authors'], data['authors'])
+        self.assertEqual(response.data['books'][0]['isbn_10'], newBook.isbn_10)
+        self.assertEqual(response.data['books'][0]['isbn_13'], newBook.isbn_13)
 
     def test_can_add_a_valid_book_with_pagecount_and_description(self):
         # make some post parameters
@@ -292,36 +171,14 @@ class PostBookTest(APITestCase):
             "description": description,
         }
 
-        # set request header
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        # get url
         url = reverse('books')
-        # make request
         response = self.client.post(url, data, format='json')
 
-        # find book in database
-        newBook = Book.objects.get(title=title)
-        # grab id
-        newBookId = newBook.id
-        # determine expected data
-        expected_data = {
-            'books': [{
-                'id': newBookId,
-                'title': title,
-                'authors': [
-                    'New Author'
-                ],
-                'position_in_series': None,
-                'series': None,
-                'publisher': None,
-                'publication_date': None,
-                'isbn_10': None,
-                'isbn_13': None,
-                'page_count': page_count,
-                'description': description,
-                'tags': []
-            }]
-        }
-        
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data, expected_data)
+        newBook = Book.objects.get(title=title)
+        self.assertEqual(response.data['books'][0]['id'], newBook.id)
+        self.assertEqual(response.data['books'][0]['title'], newBook.title)
+        self.assertEqual(response.data['books'][0]['authors'], data['authors'])
+        self.assertEqual(response.data['books'][0]['page_count'], newBook.page_count)
+        self.assertEqual(response.data['books'][0]['description'], newBook.description)
