@@ -48,6 +48,20 @@ class BookTest(TestCase):
         self.assertEqual(Book.objects.count(), expectedCount)
         self.assertTrue(filteredBooks.exists())
 
+    def test_book_can_have_a_current_status(self):
+        expectedCount = Book.objects.count() + 1
+        
+        new_book = Book.objects.create(
+            title="Current Status Test Book", 
+            user=self.user, 
+            current_status=Book.COMPLETED)
+        filteredBooks = Book.objects.filter(id=new_book.id)
+
+        self.assertEqual(Book.objects.count(), expectedCount)
+        self.assertTrue(filteredBooks.exists())
+        self.assertEqual(filteredBooks[0].current_status, Book.COMPLETED)
+        self.assertEqual(filteredBooks[0].get_current_status_display(), "Completed")
+
 
 class BookAuthorTests(TestCase):
     """ Test module for the BookAuthor model """
