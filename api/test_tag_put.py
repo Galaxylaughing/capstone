@@ -310,3 +310,30 @@ class PutBookTagTest(APITestCase):
 
         deleted_tag = BookTag.objects.filter(tag_name=tag_name)
         self.assertFalse(deleted_tag.exists())
+
+    def test_can_change_nested_tag_name(self):
+        book = Book.objects.create(
+            title="PutNestedTagTest", user=self.user)
+        nested_tag = BookTag.objects.create(
+            tag_name="fiction__historical-fiction", user=self.user, book=book)
+
+        data = {
+            "new_name": "fiction__historical",
+            "books": [book.id]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('tag', kwargs={"tag_name": nested_tag.tag_name})
+        response = self.client.put(url, data, format='json')
+
+        expected_data = {
+            "tags": [{
+                "tag_name": data["new_name"],
+                "books": [book.id]
+            }]
+        }
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        updated_tag = BookTag.objects.get(id=nested_tag.id)
+        self.assertEqual(updated_tag.tag_name, data["new_name"])
