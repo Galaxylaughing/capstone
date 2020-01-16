@@ -9,6 +9,7 @@ urlpatterns = [
     path('series/<int:series_id>/', views.one_series, name="series_details"),
     path('tags/', views.tags, name="tags"),
     path('tags/<str:tag_name>/', views.tag, name="tag"),
+    path('status/<int:book_id>/', views.bookstatus, name="bookstatus")
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json'])

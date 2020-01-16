@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
-from .models import Book, BookAuthor, Series, BookTag
-from .serializers import BookSerializer, SeriesSerializer, BookTagSerializer
+from .models import Book, BookAuthor, Series, BookTag, BookStatus
+from .serializers import BookSerializer, SeriesSerializer, BookTagSerializer, BookStatusSerializer
 
 from django.apps import apps
 User = apps.get_model('userauth','User')
@@ -518,5 +518,25 @@ def tag(request, tag_name):
         else:
             error_message = {
                 "error": "Could not find any tags matching the name '%s'" %(tag_name)
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def bookstatus(request, book_id):
+    if request.method == "GET":
+        request_user = User.objects.get(auth_token__key=request.auth)
+        matching_books = Book.objects.filter(user=request_user, id=book_id)
+        
+        if matching_books.count() > 0:
+            matching_book = matching_books[0]
+            matching_bookstatuses = BookStatus.objects.filter(user=request_user, book=matching_book)
+            serializer = BookStatusSerializer(matching_bookstatuses, many=True)
+            json = {
+                'status_history': serializer.data
+            }
+            return Response(json, status=status.HTTP_200_OK)
+        else:
+            error_message = {
+                "error": "Could not find book with ID: %s" %(book_id)
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
