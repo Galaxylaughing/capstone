@@ -18,7 +18,7 @@ class Book(models.Model):
     isbn_13 = models.CharField(max_length=20, null=True)
 
     # from https://docs.djangoproject.com/en/3.0/ref/models/fields/#choices
-    WANTTOREAD = 'WTF'
+    WANTTOREAD = 'WTR'
     CURRENT = 'CURR'
     COMPLETED = 'COMP'
     PAUSED = 'PAUS'

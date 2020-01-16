@@ -52,11 +52,13 @@ class GetBooksTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['books'][1]['id'], book_one.id)
         self.assertEqual(response.data['books'][1]['title'], book_one.title)
+        self.assertEqual(response.data['books'][1]['current_status'], Book.WANTTOREAD)
         self.assertEqual(response.data['books'][1]['authors'][0], book_one_author_two.author_name)
         self.assertEqual(response.data['books'][1]['authors'][1], book_one_author_one.author_name)
 
         self.assertEqual(response.data['books'][0]['id'], book_two.id)
         self.assertEqual(response.data['books'][0]['title'], book_two.title)
+        self.assertEqual(response.data['books'][1]['current_status'], Book.WANTTOREAD)
         self.assertEqual(response.data['books'][0]['authors'][0], book_two_author_one.author_name)
 
     def test_returns_empty_list_if_no_books(self):
