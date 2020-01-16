@@ -4,9 +4,12 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
+from django.utils import timezone
+import datetime
+import pytz
 
-from .models import Book, BookAuthor, Series, BookTag
-from .serializers import BookSerializer, BookAuthorSerializer, SeriesSerializer, BookTagSerializer
+from .models import Book, BookAuthor, Series, BookTag, BookStatus
+from .serializers import BookSerializer, BookAuthorSerializer, SeriesSerializer, BookTagSerializer, BookStatusSerializer
 
 from django.apps import apps
 User = apps.get_model('userauth','User')
@@ -287,3 +290,60 @@ class BookTagSerializerTests(TestCase):
         serializer = BookTagSerializer(bookTagList, many=True)
 
         self.assertEqual(serializer.data, expected_data)
+
+class BookStatusSerializerTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="Book Tag Serializer User", password="password")
+        self.token = str(self.user.auth_token)
+
+    # BOOKSTATUS SERIALIZER
+    def test_bookstatus_serializer_returns_expected_data(self):
+        book = Book.objects.create(
+            title="Status Serializer Test Book", user=self.user)
+        date_one = pytz.utc.localize(datetime.datetime(2011, 1, 1))
+        status_one = BookStatus.objects.create(
+            status_code=Book.WANTTOREAD, 
+            book=book, 
+            user=self.user, 
+            date=date_one
+        )
+        date_two = pytz.utc.localize(datetime.datetime(2011, 1, 2))
+        status_two = BookStatus.objects.create(
+            status_code=Book.CURRENT, 
+            book=book, 
+            user=self.user, 
+            date=date_two
+        )
+        date_three = pytz.utc.localize(datetime.datetime(2011, 1, 3))
+        status_three = BookStatus.objects.create(
+            status_code=Book.COMPLETED, 
+            book=book, 
+            user=self.user, 
+            date=date_three
+        )
+
+        expected_data = [
+            {
+                "status_code": status_one.status_code,
+                "book": book.id,
+                "date": date_one.strftime("%Y-%m-%dT%H:%M:%SZ")
+            },
+            {
+                "status_code": status_two.status_code,
+                "book": book.id,
+                "date": date_two.strftime("%Y-%m-%dT%H:%M:%SZ")
+            },
+            {
+                "status_code": status_three.status_code,
+                "book": book.id,
+                "date": date_three.strftime("%Y-%m-%dT%H:%M:%SZ")
+            },
+        ]
+
+        bookstatus_list = BookStatus.objects.filter(user=self.user, book=book)
+        serializer = BookStatusSerializer(bookstatus_list, many=True)
+
+        self.assertEqual(serializer.data, expected_data)
+        

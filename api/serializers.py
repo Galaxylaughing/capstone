@@ -2,7 +2,7 @@
                              
 from rest_framework import serializers
          
-from .models import Book, BookAuthor, Series, BookTag
+from .models import Book, BookAuthor, Series, BookTag, BookStatus
 
 
 class BookAuthorSerializer(serializers.ModelSerializer):
@@ -22,6 +22,15 @@ class BookTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookTag
         fields = ['tag_name', 'book']
+
+class BookStatusSerializer(serializers.ModelSerializer):
+    """ serializer for the BookStatus model """
+
+    book = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = BookStatus
+        fields = ['status_code', 'book', 'date']
 
 class BookSerializer(serializers.ModelSerializer):
     """ serializer for the Book model """

@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor, Series, BookTag
+from .models import Book, BookAuthor, Series, BookTag, BookStatus
 from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
@@ -249,3 +249,51 @@ class BookTagTests(TestCase):
             tag_name=tag_name, user=self.user, book=self.book)
         
         self.assertEqual(str(tag), tag_name)
+
+class BookStatusTests(TestCase):
+    """ Test module for the BookStatus model """
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="StatusUser", password="password")
+        self.book = Book.objects.create(
+            title="BookStatus", user=self.user)
+
+    def test_bookstatus_str_method(self):
+        status_code = Book.CURRENT
+        status = BookStatus.objects.create(
+            status_code=status_code, user=self.user, book=self.book)
+
+        self.assertEqual(str(status), status_code)
+
+    def test_bookstatus_can_be_created(self):
+        expected_count = BookStatus.objects.count() + 1
+
+        status_code = Book.COMPLETED
+        status = BookStatus.objects.create(
+            status_code=status_code, user=self.user, book=self.book)
+
+        self.assertEqual(BookStatus.objects.count(), expected_count)
+
+        filtered_book_statuses = BookStatus.objects.filter(
+            status_code=status_code, book=self.book)
+        self.assertTrue(filtered_book_statuses.exists())
+        self.assertEqual(filtered_book_statuses[0].status_code, status_code)
+        self.assertEqual(filtered_book_statuses[0].user, self.user)
+        self.assertEqual(filtered_book_statuses[0].book, self.book)
+        
+    def test_bookstatus_is_deleted_if_user_is_deleted(self):
+        expected_count = BookStatus.objects.count() + 1
+
+        new_user = User.objects.create(
+            username="Status User to Be Deleted", password="password")
+        new_book = Book.objects.create(
+            title="Status Book of User to Be Deleted", user=new_user)
+        status_code = Book.COMPLETED
+        status = BookStatus.objects.create(
+            status_code=status_code, user=new_user, book=new_book)
+        self.assertEqual(BookStatus.objects.count(), expected_count)
+
+        new_user.delete()
+
+        self.assertEqual(BookStatus.objects.count(), expected_count - 1)

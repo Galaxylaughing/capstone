@@ -75,6 +75,7 @@ class BookTag(models.Model):
         ]
 
 class BookStatus(models.Model):
+    user = models.ForeignKey('userauth.User', on_delete=models.CASCADE)
     book = models.ForeignKey(Book, related_name="statuses", on_delete=models.CASCADE)
     date = models.DateTimeField(default=django.utils.timezone.now)
     status_code = models.CharField(max_length=4, choices=Book.STATUS_CHOICES)
