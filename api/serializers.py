@@ -30,7 +30,7 @@ class BookStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BookStatus
-        fields = ['status_code', 'book', 'date']
+        fields = ['id', 'status_code', 'book', 'date']
 
 class BookSerializer(serializers.ModelSerializer):
     """ serializer for the Book model """

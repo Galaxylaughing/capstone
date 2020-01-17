@@ -326,16 +326,19 @@ class BookStatusSerializerTests(TestCase):
 
         expected_data = [
             {
+                "id": status_one.id,
                 "status_code": status_one.status_code,
                 "book": book.id,
                 "date": date_one.strftime("%Y-%m-%dT%H:%M:%SZ")
             },
             {
+                "id": status_two.id,
                 "status_code": status_two.status_code,
                 "book": book.id,
                 "date": date_two.strftime("%Y-%m-%dT%H:%M:%SZ")
             },
             {
+                "id": status_three.id,
                 "status_code": status_three.status_code,
                 "book": book.id,
                 "date": date_three.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -346,4 +349,3 @@ class BookStatusSerializerTests(TestCase):
         serializer = BookStatusSerializer(bookstatus_list, many=True)
 
         self.assertEqual(serializer.data, expected_data)
-        

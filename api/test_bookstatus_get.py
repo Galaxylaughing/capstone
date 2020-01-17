@@ -46,11 +46,13 @@ class GetBookStatusTest(APITestCase):
         expected_data = {
             'status_history': [
                 {
+                    "id": status_one.id,
                     "status_code": status_one.status_code,
                     "book": self.book.id,
                     "date": date_one.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 },
                 {
+                    "id": status_two.id,
                     "status_code": status_two.status_code,
                     "book": self.book.id,
                     "date": date_two.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -78,7 +80,7 @@ class GetBookStatusTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, expected_data)
 
-    def test_returns_error_for_if_user_a_book_that_is_not_theirs(self):
+    def test_returns_error_for_a_book_that_is_not_the_users(self):
         other_user = User.objects.create(
             username="other user", password="password")
         other_book = Book.objects.create(

@@ -3,6 +3,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.exceptions import ValidationError
 
 from rest_framework.authtoken.models import Token
 from .models import Book, BookAuthor, Series, BookTag, BookStatus
@@ -521,7 +522,7 @@ def tag(request, tag_name):
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def bookstatus(request, book_id):
     if request.method == "GET":
         request_user = User.objects.get(auth_token__key=request.auth)
@@ -535,6 +536,53 @@ def bookstatus(request, book_id):
                 'status_history': serializer.data
             }
             return Response(json, status=status.HTTP_200_OK)
+        else:
+            error_message = {
+                "error": "Could not find book with ID: %s" %(book_id)
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "POST":
+        request_user = User.objects.get(auth_token__key=request.auth)
+        matching_books = Book.objects.filter(user=request_user, id=book_id)
+
+        if matching_books.count() > 0:
+            matching_book = matching_books[0]
+
+            if "status_code" in request.data and "date" in request.data:
+                status_code = request.data["status_code"]
+                date = request.data["date"]
+
+                # from https://www.geeksforgeeks.org/python-check-if-element-is-present-in-tuple-of-tuples/
+                if (any(status_code in i for i in Book.STATUS_CHOICES)):
+                    try:
+                        new_status = BookStatus.objects.create(
+                            status_code=status_code,
+                            date=date,
+                            user=request_user,
+                            book=matching_book)
+                    except ValidationError as error:
+                        error_message = {
+                            "error": error.messages,
+                        }
+                        return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+                    serializer = BookStatusSerializer(new_status)
+                    json = {
+                        "status": serializer.data
+                    }
+
+                    return Response(json, status=status.HTTP_201_CREATED)
+                else:
+                    error_message = {
+                        "error": "Invalid status code"
+                    }
+                    return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                error_message = {
+                    "error": "Invalid status parameters"
+                }
+                return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
         else:
             error_message = {
                 "error": "Could not find book with ID: %s" %(book_id)
