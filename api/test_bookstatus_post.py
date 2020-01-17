@@ -36,7 +36,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': self.book.id})
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -56,7 +56,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': self.book.id})
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
         response = self.client.post(url, data, format='json')
 
         expected_data = {
@@ -73,7 +73,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': self.book.id})
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
         response = self.client.post(url, data, format='json')
 
         expected_data = {
@@ -90,7 +90,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': self.book.id})
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
         response = self.client.post(url, data, format='json')
 
         expected_data = {
@@ -109,7 +109,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': self.book.id})
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
         response = self.client.post(url, data, format='json')
 
         expected_data = {
@@ -129,7 +129,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': fake_id})
+        url = reverse('bookstatus', kwargs={'id': fake_id})
         response = self.client.post(url, data, format='json')
 
         expected_data = {
@@ -152,7 +152,7 @@ class PostBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': other_book.id})
+        url = reverse('bookstatus', kwargs={'id': other_book.id})
         response = self.client.post(url, data, format='json')
 
         expected_data = {

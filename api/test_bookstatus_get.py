@@ -61,7 +61,7 @@ class GetBookStatusTest(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': self.book.id})
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -71,7 +71,7 @@ class GetBookStatusTest(APITestCase):
         fake_id = 999
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': fake_id})
+        url = reverse('bookstatus', kwargs={'id': fake_id})
         response = self.client.get(url, format='json')
 
         expected_data = {
@@ -87,7 +87,7 @@ class GetBookStatusTest(APITestCase):
             title="Get Status by User's Book Test", user=other_user)
 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        url = reverse('bookstatus', kwargs={'book_id': other_book.id})
+        url = reverse('bookstatus', kwargs={'id': other_book.id})
         response = self.client.get(url, format='json')
 
         expected_data = {

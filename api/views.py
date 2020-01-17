@@ -522,9 +522,10 @@ def tag(request, tag_name):
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET", "POST"])
-def bookstatus(request, book_id):
+@api_view(["GET", "POST", "DELETE"])
+def bookstatus(request, id):
     if request.method == "GET":
+        book_id = id
         request_user = User.objects.get(auth_token__key=request.auth)
         matching_books = Book.objects.filter(user=request_user, id=book_id)
         
@@ -543,6 +544,7 @@ def bookstatus(request, book_id):
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "POST":
+        book_id = id
         request_user = User.objects.get(auth_token__key=request.auth)
         matching_books = Book.objects.filter(user=request_user, id=book_id)
 
@@ -586,5 +588,30 @@ def bookstatus(request, book_id):
         else:
             error_message = {
                 "error": "Could not find book with ID: %s" %(book_id)
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == "DELETE":
+        status_id = id
+        request_user = User.objects.get(auth_token__key=request.auth)
+        matching_statuses = BookStatus.objects.filter(id=status_id, user=request_user)
+
+        if matching_statuses.count() > 0:
+            matching_status = matching_statuses[0]
+
+            serializer = BookStatusSerializer(matching_status)
+            json = {
+                "status": serializer.data
+            }
+
+            matching_status.delete()
+
+            print(json)
+
+            return Response(json, status=status.HTTP_200_OK)
+
+        else:
+            error_message = {
+                "error": "Could not find status with ID: %s" %(status_id)
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
