@@ -569,11 +569,14 @@ def bookstatus(request, id):
                         }
                         return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
+                    # update book's current status
+                    matching_book.current_status = status_code
+                    matching_book.save()
+
                     serializer = BookStatusSerializer(new_status)
                     json = {
                         "status": serializer.data
                     }
-
                     return Response(json, status=status.HTTP_201_CREATED)
                 else:
                     error_message = {
@@ -605,8 +608,6 @@ def bookstatus(request, id):
             }
 
             matching_status.delete()
-
-            print(json)
 
             return Response(json, status=status.HTTP_200_OK)
 
