@@ -4,6 +4,9 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
+from django.utils import timezone
+import datetime
+import pytz
 
 from .models import Book, BookAuthor, Series, BookTag, BookStatus
 from .serializers import BookSerializer, BookAuthorSerializer
@@ -62,6 +65,20 @@ class BookTest(TestCase):
         self.assertEqual(filteredBooks[0].current_status, Book.COMPLETED)
         self.assertEqual(filteredBooks[0].get_current_status_display(), "Completed")
 
+    def test_book_can_have_a_current_status_date(self):
+        expectedCount = Book.objects.count() + 1
+        
+        date = pytz.utc.localize(datetime.datetime(2020, 1, 16))
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
+        new_book = Book.objects.create(
+            title="Current Status Test Book", 
+            user=self.user,
+            current_status_date=iso_date)
+        filteredBooks = Book.objects.filter(id=new_book.id)
+
+        self.assertEqual(Book.objects.count(), expectedCount)
+        self.assertTrue(filteredBooks.exists())
+        self.assertEqual(filteredBooks[0].current_status_date, date)
 
 class BookAuthorTests(TestCase):
     """ Test module for the BookAuthor model """

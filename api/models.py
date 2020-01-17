@@ -36,6 +36,7 @@ class Book(models.Model):
         choices=STATUS_CHOICES, 
         default=WANTTOREAD
     )
+    current_status_date = models.DateTimeField(default=django.utils.timezone.now)
 
     def __str__(self):
         return self.title

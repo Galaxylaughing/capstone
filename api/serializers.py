@@ -53,6 +53,7 @@ class BookSerializer(serializers.ModelSerializer):
         'page_count',
         'description',
         'current_status',
+        'current_status_date',
         'tags']
 
 class SeriesSerializer(serializers.ModelSerializer):

@@ -4,6 +4,9 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
+from django.utils import timezone
+import datetime
+import pytz
 
 from .models import Book, BookAuthor, Series, BookTag
 from .serializers import BookSerializer, BookAuthorSerializer
@@ -35,6 +38,8 @@ class GetBookDetailsTest(APITestCase):
         who happen to be princesses, the God King one of them has to marry, 
         the lesser god who doesn&#39;t like his job, and the immortal who&#39;s 
         still trying to undo the mistakes he made hundreds of years ago."""
+        date = pytz.utc.localize(datetime.datetime(2020, 1, 16))
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
 
         firstBook = Book.objects.create(
             title="First Book", 
@@ -45,7 +50,9 @@ class GetBookDetailsTest(APITestCase):
             isbn_10=isbn_10,
             isbn_13=isbn_13,
             page_count=page_count,
-            description=description)
+            description=description,
+            current_status=Book.COMPLETED,
+            current_status_date=iso_date)
 
         # give the book an author
         BookAuthor.objects.create(
@@ -67,7 +74,8 @@ class GetBookDetailsTest(APITestCase):
                 'isbn_13': isbn_13,
                 'page_count': page_count,
                 'description': description,
-                'current_status': Book.WANTTOREAD,
+                'current_status': Book.COMPLETED,
+                'current_status_date': date.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 'tags': []
             }
         }

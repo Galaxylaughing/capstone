@@ -70,6 +70,28 @@ class PostBookStatusTest(APITestCase):
         self.assertEqual(filtered_statuses[0].book, self.book)
         self.assertEqual(filtered_statuses[0].book.current_status, Book.COMPLETED)
 
+    def test_adding_a_bookstatus_changes_books_current_status_date(self):
+        status_code = Book.COMPLETED
+        date = pytz.utc.localize(datetime.datetime(2020, 1, 16))
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
+
+        data = {
+            "status_code": status_code,
+            "date": iso_date
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('bookstatus', kwargs={'id': self.book.id})
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        filtered_statuses = BookStatus.objects.filter(
+            user=self.user, book=self.book, status_code=status_code)
+        self.assertTrue(filtered_statuses.exists())
+        self.assertEqual(filtered_statuses[0].book, self.book)
+        self.assertEqual(filtered_statuses[0].book.current_status_date, date)
+
     def test_cannot_create_a_bookstatus_without_a_status(self):
         date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
         data = {

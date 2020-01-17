@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
 
+from django.utils import timezone
+import datetime
+import pytz
+
 from rest_framework.authtoken.models import Token
 from .models import Book, BookAuthor, Series, BookTag, BookStatus
 from .serializers import BookSerializer, SeriesSerializer, BookTagSerializer, BookStatusSerializer
@@ -571,6 +575,7 @@ def bookstatus(request, id):
 
                     # update book's current status
                     matching_book.current_status = status_code
+                    matching_book.current_status_date = date
                     matching_book.save()
 
                     serializer = BookStatusSerializer(new_status)

@@ -175,6 +175,21 @@ class BookAndBookAuthorSerializerTests(TestCase):
         self.assertEqual(serializer.data['id'], book.id)
         self.assertEqual(serializer.data['current_status'], book.current_status)
 
+    def test_serializer_will_return_current_status_date(self):
+        date = pytz.utc.localize(datetime.datetime(2020, 1, 16))
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
+
+        book = Book.objects.create(
+            title="Serialize Current Status Date Test Book", 
+            user=self.user,
+            current_status_date=iso_date)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+
     def test_serializer_will_return_tags(self):
         user = User.objects.create(
             username='UserToTestTagRelationship', password='password')

@@ -4,6 +4,9 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
+from django.utils import timezone
+import datetime
+import pytz
 
 from .models import Book, BookAuthor
 from .serializers import BookSerializer, BookAuthorSerializer
@@ -25,11 +28,14 @@ class GetBooksTest(APITestCase):
         self.token = str(self.user.auth_token)
 
     def test_can_access_a_users_books(self):
+        date = pytz.utc.localize(datetime.datetime(2020, 1, 16))
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
+
         # give the user some books
         book_one = Book.objects.create(
-            title="First Book", user=self.user)
+            title="First Book", user=self.user, current_status_date=iso_date)
         book_two = Book.objects.create(
-            title="Second Book", user=self.user)
+            title="Second Book", user=self.user, current_status_date=iso_date)
 
         # give the books some authors
         book_one_author_one = BookAuthor.objects.create(
@@ -53,12 +59,14 @@ class GetBooksTest(APITestCase):
         self.assertEqual(response.data['books'][1]['id'], book_one.id)
         self.assertEqual(response.data['books'][1]['title'], book_one.title)
         self.assertEqual(response.data['books'][1]['current_status'], Book.WANTTOREAD)
+        self.assertEqual(response.data['books'][1]['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
         self.assertEqual(response.data['books'][1]['authors'][0], book_one_author_two.author_name)
         self.assertEqual(response.data['books'][1]['authors'][1], book_one_author_one.author_name)
 
         self.assertEqual(response.data['books'][0]['id'], book_two.id)
         self.assertEqual(response.data['books'][0]['title'], book_two.title)
         self.assertEqual(response.data['books'][1]['current_status'], Book.WANTTOREAD)
+        self.assertEqual(response.data['books'][1]['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
         self.assertEqual(response.data['books'][0]['authors'][0], book_two_author_one.author_name)
 
     def test_returns_empty_list_if_no_books(self):
