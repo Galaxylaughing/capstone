@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from unittest import skip
 
-from .models import Book, BookAuthor, Series
+from .models import Book, BookAuthor, Series, BookStatus
 from .serializers import BookSerializer, BookAuthorSerializer
 
 from django.apps import apps
@@ -45,6 +45,28 @@ class PostBookTest(APITestCase):
         self.assertEqual(response.data['books'][0]['title'], newBook.title)
         self.assertEqual(response.data['books'][0]['authors'], ["Other Author", "New Author"])
         self.assertEqual(response.data['books'][0]['tags'], [tag_two, tag_one])
+
+    def test_adding_a_book_gives_it_a_status_and_status_history(self):
+        title = 'New Book With Unique Title'
+        data = {
+            "title": title,
+            "authors": ["New Author"]
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('books')
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # find book in database
+        new_book = Book.objects.get(title=title)
+        self.assertEqual(response.data['books'][0]['id'], new_book.id)
+        self.assertEqual(response.data['books'][0]['title'], new_book.title)
+        self.assertEqual(response.data['books'][0]['current_status'], Book.WANTTOREAD)
+
+        new_status = BookStatus.objects.filter(user=self.user, book=new_book)
+        self.assertTrue(new_status.exists())
+        self.assertEqual(new_status[0].status_code, Book.WANTTOREAD)
 
     def test_can_add_a_valid_book_with_series(self):
         series_name = "Cool Series"

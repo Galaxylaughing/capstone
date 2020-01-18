@@ -111,6 +111,14 @@ def books(request):
                     BookTag.objects.create(
                         tag_name=tag, book=newBook, user=requestUser)
 
+            # make new default status
+            date = pytz.utc.localize(datetime.datetime.now())
+            new_status = BookStatus.objects.create(
+                status_code=Book.WANTTOREAD,
+                date=date,
+                user=requestUser,
+                book=newBook)
+
             # create response json
             serializer = BookSerializer(newBook)
             json = {
