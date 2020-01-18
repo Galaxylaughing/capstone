@@ -6,6 +6,7 @@ from rest_framework import status
 from django.core.exceptions import ValidationError
 
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 import datetime
 import pytz
 
@@ -574,9 +575,14 @@ def bookstatus(request, id):
                         return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
                     # update book's current status
-                    matching_book.current_status = status_code
-                    matching_book.current_status_date = date
-                    matching_book.save()
+                    # if the new status's date is more recent than the old current status
+                    new_date = parse_datetime(date)
+                    old_date = matching_book.current_status_date
+                    difference = new_date - old_date
+                    if (difference.days > 0) or (difference.days == 0 and difference.seconds > 0):
+                        matching_book.current_status = status_code
+                        matching_book.current_status_date = date
+                        matching_book.save()
 
                     serializer = BookStatusSerializer(new_status)
                     json = {

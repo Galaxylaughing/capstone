@@ -23,8 +23,13 @@ class PostBookStatusTest(APITestCase):
         self.user = User.objects.create(
             username='Bertie', password='password')
         self.token = str(self.user.auth_token)
+
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 1)).isoformat()
         self.book = Book.objects.create(
-            title="Post Status Test", user=self.user)
+            title="Post Status Test", 
+            user=self.user,
+            current_status=Book.WANTTOREAD, 
+            current_status_date=iso_date)
 
     def test_can_create_a_valid_bookstatus(self):
         status_code = Book.PAUSED
@@ -51,7 +56,7 @@ class PostBookStatusTest(APITestCase):
 
     def test_adding_a_bookstatus_changes_books_current_status(self):
         status_code = Book.COMPLETED
-        date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
+        date = pytz.utc.localize(datetime.datetime(2021, 1, 16)).isoformat()
 
         data = {
             "status_code": status_code,
@@ -72,8 +77,8 @@ class PostBookStatusTest(APITestCase):
 
     def test_adding_a_bookstatus_changes_books_current_status_date(self):
         status_code = Book.COMPLETED
-        date = pytz.utc.localize(datetime.datetime(2020, 1, 16))
-        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
+        date = pytz.utc.localize(datetime.datetime(2020, 1, 18))
+        iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 18)).isoformat()
 
         data = {
             "status_code": status_code,
@@ -91,6 +96,43 @@ class PostBookStatusTest(APITestCase):
         self.assertTrue(filtered_statuses.exists())
         self.assertEqual(filtered_statuses[0].book, self.book)
         self.assertEqual(filtered_statuses[0].book.current_status_date, date)
+
+    def test_adding_a_historical_bookstatus_does_not_change_books_current_status_date(self):
+        current_date = pytz.utc.localize(datetime.datetime(2020, 1, 17))
+        iso_current_date = pytz.utc.localize(datetime.datetime(2020, 1, 17)).isoformat()
+
+        book = Book.objects.create(
+            title="Post Historical Status Test", 
+            user=self.user, 
+            current_status=Book.COMPLETED
+        )
+        existing_status = BookStatus.objects.create(
+            status_code=Book.COMPLETED,
+            book=book,
+            user=self.user,
+            date=iso_current_date
+        )
+
+        status_code = Book.CURRENT
+        prior_date = pytz.utc.localize(datetime.datetime(2020, 1, 2))
+        iso_prior_date = pytz.utc.localize(datetime.datetime(2020, 1, 2)).isoformat()
+        data = {
+            "status_code": status_code,
+            "date": iso_prior_date
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('bookstatus', kwargs={'id': book.id})
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        filtered_statuses = BookStatus.objects.filter(
+            user=self.user, book=book, status_code=status_code)
+        self.assertTrue(filtered_statuses.exists())
+
+        affected_book = Book.objects.get(id=book.id)
+        self.assertEqual(affected_book.current_status, Book.COMPLETED)
 
     def test_cannot_create_a_bookstatus_without_a_status(self):
         date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
