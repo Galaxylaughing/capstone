@@ -690,3 +690,39 @@ def bookstatus(request, id):
                 "error": "Could not find status with ID: %s" %(status_id)
             }
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["PUT"])
+def rating(request, book_id):
+    if request.method == "PUT":
+        request_user = User.objects.get(auth_token__key=request.auth)
+        matching_books = Book.objects.filter(user=request_user, id=book_id)
+
+        if "rating" in request.data:
+            new_rating = request.data['rating']
+
+            if matching_books.count() > 0:
+                matching_book = matching_books[0]
+                if (any(new_rating in i for i in Book.RATING_CHOICES)):
+                    matching_book.rating = new_rating
+                    matching_book.save()
+
+                    serializer = BookSerializer(matching_book)
+                    json = {
+                        'books': [serializer.data]
+                    }
+                    return Response(json, status=status.HTTP_200_OK)
+                else:
+                    error_message = {
+                        'error': '%s is not a valid rating' %(new_rating)
+                    }
+                    return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                error_message = {
+                    'error': 'Could not find book with ID: %s' %(book_id)
+                }
+                return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            error_message = {
+                'error': 'New Rating Not Provided'
+            }
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)

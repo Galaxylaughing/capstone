@@ -32,10 +32,17 @@ class GetBooksTest(APITestCase):
         iso_date = pytz.utc.localize(datetime.datetime(2020, 1, 16)).isoformat()
 
         # give the user some books
+        book_one_rating = Book.UNRATED
         book_one = Book.objects.create(
-            title="First Book", user=self.user, current_status_date=iso_date)
+            title="First Book", 
+            user=self.user, 
+            current_status_date=iso_date)
+        book_two_rating = Book.FOUR
         book_two = Book.objects.create(
-            title="Second Book", user=self.user, current_status_date=iso_date)
+            title="Second Book", 
+            user=self.user, 
+            rating=book_two_rating,
+            current_status_date=iso_date)
 
         # give the books some authors
         book_one_author_one = BookAuthor.objects.create(
@@ -60,13 +67,15 @@ class GetBooksTest(APITestCase):
         self.assertEqual(response.data['books'][1]['title'], book_one.title)
         self.assertEqual(response.data['books'][1]['current_status'], Book.WANTTOREAD)
         self.assertEqual(response.data['books'][1]['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        self.assertEqual(response.data['books'][1]['rating'], book_one_rating)
         self.assertEqual(response.data['books'][1]['authors'][0], book_one_author_two.author_name)
         self.assertEqual(response.data['books'][1]['authors'][1], book_one_author_one.author_name)
 
         self.assertEqual(response.data['books'][0]['id'], book_two.id)
         self.assertEqual(response.data['books'][0]['title'], book_two.title)
-        self.assertEqual(response.data['books'][1]['current_status'], Book.WANTTOREAD)
-        self.assertEqual(response.data['books'][1]['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        self.assertEqual(response.data['books'][0]['current_status'], Book.WANTTOREAD)
+        self.assertEqual(response.data['books'][0]['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        self.assertEqual(response.data['books'][0]['rating'], book_two_rating)
         self.assertEqual(response.data['books'][0]['authors'][0], book_two_author_one.author_name)
 
     def test_returns_empty_list_if_no_books(self):
