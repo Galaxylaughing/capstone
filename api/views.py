@@ -545,6 +545,16 @@ def bookstatus(request, id):
         if matching_books.count() > 0:
             matching_book = matching_books[0]
             matching_bookstatuses = BookStatus.objects.filter(user=request_user, book=matching_book)
+
+            # TODO: remove temp code
+            # if matching_bookstatuses.count() == 0 and matching_book.current_status == Book.WANTTOREAD:
+            #     starter_status = BookStatus.objects.create(
+            #         book=matching_book,
+            #         user=request_user,
+            #         status_code=matching_book.current_status,
+            #         date=matching_book.current_status_date
+            #     )
+
             serializer = BookStatusSerializer(matching_bookstatuses, many=True)
             json = {
                 'status_history': serializer.data
@@ -623,8 +633,31 @@ def bookstatus(request, id):
 
             serializer = BookStatusSerializer(matching_status)
             json = {
-                "status": serializer.data
+                "status": serializer.data,
             }
+
+            # update book
+            matching_book = matching_status.book
+            status_history = BookStatus.objects.filter(user=request_user, book=matching_book)
+
+            if status_history.count() > 0:
+                most_recent = status_history[0]
+
+                for book_status in status_history:
+                    if book_status != matching_status:
+                        difference = book_status.date - most_recent.date
+                        if (difference.days > 0) or (difference.days == 0 and difference.seconds > 0):
+                            most_recent = book_status
+
+                    matching_book.current_status = most_recent.status_code
+                    matching_book.current_status_date = most_recent.date
+                    matching_book.save()
+
+                    json["current_status"] = most_recent.status_code
+                    json["current_status_date"] = most_recent.date
+            else:
+                json["current_status"] = matching_book.current_status
+                json["current_status_date"] = matching_book.current_status_date
 
             matching_status.delete()
 
