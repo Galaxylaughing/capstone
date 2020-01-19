@@ -52,7 +52,10 @@ class GetSeriesTest(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['series'][0]['id'], expected_data['series'][0]['id'])
+        self.assertEqual(response.data['series'][0]['name'], expected_data['series'][0]['name'])
+        self.assertEqual(response.data['series'][0]['planned_count'], expected_data['series'][0]['planned_count'])
+        self.assertEqual(response.data['series'][0]['books'], expected_data['series'][0]['books'])
 
     def test_can_access_a_specific_users_series(self):
         # create a series
@@ -90,7 +93,10 @@ class GetSeriesTest(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['series'][0]['id'], expected_data['series'][0]['id'])
+        self.assertEqual(response.data['series'][0]['name'], expected_data['series'][0]['name'])
+        self.assertEqual(response.data['series'][0]['planned_count'], expected_data['series'][0]['planned_count'])
+        self.assertEqual(response.data['series'][0]['books'], expected_data['series'][0]['books'])
 
         filteredSeries = Series.objects.filter(
             id=other_series.id)

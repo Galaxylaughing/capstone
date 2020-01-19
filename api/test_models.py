@@ -80,6 +80,31 @@ class BookTest(TestCase):
         self.assertTrue(filteredBooks.exists())
         self.assertEqual(filteredBooks[0].current_status_date, date)
 
+    def test_book_has_a_default_rating(self):
+        expectedCount = Book.objects.count() + 1
+        
+        new_book = Book.objects.create(
+            title="Rating Test Book", 
+            user=self.user,
+            rating=Book.FOUR)
+        filteredBooks = Book.objects.filter(id=new_book.id)
+
+        self.assertEqual(Book.objects.count(), expectedCount)
+        self.assertTrue(filteredBooks.exists())
+        self.assertEqual(filteredBooks[0].rating, Book.FOUR)
+
+    def test_book_can_have_a_rating(self):
+        expectedCount = Book.objects.count() + 1
+        
+        new_book = Book.objects.create(
+            title="Default Rating Test Book", 
+            user=self.user)
+        filteredBooks = Book.objects.filter(id=new_book.id)
+
+        self.assertEqual(Book.objects.count(), expectedCount)
+        self.assertTrue(filteredBooks.exists())
+        self.assertEqual(filteredBooks[0].rating, Book.UNRATED)
+
 class BookAuthorTests(TestCase):
     """ Test module for the BookAuthor model """
 

@@ -52,7 +52,8 @@ class GetBookDetailsTest(APITestCase):
             page_count=page_count,
             description=description,
             current_status=Book.COMPLETED,
-            current_status_date=iso_date)
+            current_status_date=iso_date,
+            rating=Book.FIVE)
 
         # give the book an author
         BookAuthor.objects.create(
@@ -76,6 +77,7 @@ class GetBookDetailsTest(APITestCase):
                 'description': description,
                 'current_status': Book.COMPLETED,
                 'current_status_date': date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                'rating': Book.FIVE,
                 'tags': []
             }
         }
@@ -87,7 +89,21 @@ class GetBookDetailsTest(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.data['book']['id'], expected_data['book']['id'])
+        self.assertEqual(response.data['book']['title'], expected_data['book']['title'])
+        self.assertEqual(response.data['book']['authors'], expected_data['book']['authors'])
+        self.assertEqual(response.data['book']['position_in_series'], expected_data['book']['position_in_series'])
+        self.assertEqual(response.data['book']['series'], expected_data['book']['series'])
+        self.assertEqual(response.data['book']['publisher'], expected_data['book']['publisher'])
+        self.assertEqual(response.data['book']['publication_date'], expected_data['book']['publication_date'])
+        self.assertEqual(response.data['book']['isbn_10'], expected_data['book']['isbn_10'])
+        self.assertEqual(response.data['book']['isbn_13'], expected_data['book']['isbn_13'])
+        self.assertEqual(response.data['book']['page_count'], expected_data['book']['page_count'])
+        self.assertEqual(response.data['book']['description'], expected_data['book']['description'])
+        self.assertEqual(response.data['book']['current_status'], expected_data['book']['current_status'])
+        self.assertEqual(response.data['book']['current_status_date'], expected_data['book']['current_status_date'])
+        self.assertEqual(response.data['book']['rating'], expected_data['book']['rating'])
+        self.assertEqual(response.data['book']['tags'], expected_data['book']['tags'])
 
     def test_cannot_get_details_for_another_users_book(self):
         new_user = User.objects.create(
@@ -372,3 +388,18 @@ class GetBookDetailsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['book']['id'], book.id)
         self.assertEqual(response.data['book']['current_status'], Book.CURRENT)
+
+    def test_can_get_rating(self):
+        rating = Book.THREE
+        book = Book.objects.create(
+            title="Current Status Test Book", 
+            user=self.user,
+            rating=rating)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('book', kwargs={'book_id': book.id})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['book']['id'], book.id)
+        self.assertEqual(response.data['book']['rating'], rating)

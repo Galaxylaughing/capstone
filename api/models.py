@@ -38,6 +38,25 @@ class Book(models.Model):
     )
     current_status_date = models.DateTimeField(default=django.utils.timezone.now)
 
+    UNRATED = 0
+    ONE = 1
+    TWO = 2
+    THREE = 3
+    FOUR = 4
+    FIVE = 5
+    RATING_CHOICES = [
+        (UNRATED,   'Unrated'),
+        (ONE,       'One'),
+        (TWO,       'Two'),
+        (THREE,     'Three'),
+        (FOUR,      'Four'),
+        (FIVE,      'Five'),
+    ]
+    rating = models.PositiveSmallIntegerField(
+        choices=RATING_CHOICES, 
+        default=UNRATED
+    )
+
     def __str__(self):
         return self.title
 

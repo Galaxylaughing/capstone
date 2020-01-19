@@ -190,6 +190,19 @@ class BookAndBookAuthorSerializerTests(TestCase):
         self.assertEqual(serializer.data['id'], book.id)
         self.assertEqual(serializer.data['current_status_date'], date.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
+    def test_serializer_will_return_rating(self):
+        rating = Book.TWO
+        book = Book.objects.create(
+            title="Serialize Rating Test Book", 
+            user=self.user,
+            rating=rating)
+
+        book = Book.objects.get(id=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(serializer.data['id'], book.id)
+        self.assertEqual(serializer.data['rating'], book.rating)
+
     def test_serializer_will_return_tags(self):
         user = User.objects.create(
             username='UserToTestTagRelationship', password='password')
