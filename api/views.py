@@ -17,6 +17,9 @@ from .serializers import BookSerializer, SeriesSerializer, BookTagSerializer, Bo
 from django.apps import apps
 User = apps.get_model('userauth','User')
 
+from django.db.models import F, Value
+from django.db.models.functions import Concat, Right, Length
+
 
 # Create your views here.
 @api_view(["GET", "POST"])
@@ -485,11 +488,30 @@ def tag(request, tag_name):
                         if matching_tag.book.id not in new_books:
                             matching_tag.delete()
 
+                    # calculate prefix form
+                    new_prefix = new_name + "__"
+                    old_prefix = tag_name + "__"
+                    old_prefix_length = len(old_prefix)
+                    # update all tags with matching prefixes
+                    BookTag.objects.filter(
+                        tag_name__startswith=old_prefix, 
+                        user=request_user
+                    ).update(
+                        tag_name=Concat(
+                            Value(new_prefix), 
+                            Right(
+                                F('tag_name'), 
+                                Length(F('tag_name')) - Value(old_prefix_length)
+                            )
+                        )
+                    )
+
                     # add wrapper
                     json = {
                         "tags": [updated_tag]
                     }
                     return Response(json, status=status.HTTP_200_OK)
+
                 # if new book list is empty, delete the tag instances
                 else:
                     # serialize tags to be deleted

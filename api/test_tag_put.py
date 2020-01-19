@@ -269,8 +269,6 @@ class PutBookTagTest(APITestCase):
         }
         self.assertEqual(response.data, expected_data)
 
-
-        # another test: if you give an empty books list, it deletes the tag
     def test_will_delete_tag_if_given_empty_book_list(self):
         # make two books and give them a tag
         book_one = Book.objects.create(
@@ -337,3 +335,33 @@ class PutBookTagTest(APITestCase):
 
         updated_tag = BookTag.objects.get(id=nested_tag.id)
         self.assertEqual(updated_tag.tag_name, data["new_name"])
+
+    def test_changing_nested_tag_changes_all_matching_prefixes(self):
+        book = Book.objects.create(
+            title="PutTagTestBookOne", user=self.user)
+        fiction_one = BookTag.objects.create(
+            tag_name="fiction", user=self.user, book=book)
+        fiction_two = BookTag.objects.create(
+            tag_name="fiction__fantasy", user=self.user, book=book)
+
+        data = {
+            "new_name": "Fiction",
+            "books": [book.id]
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        url = reverse('tag', kwargs={"tag_name": fiction_one.tag_name})
+        response = self.client.put(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # expected_data = {
+        #     "tags": [{
+        #         "tag_name": data["new_name"],
+        #         "books": [book_one.id, book_two.id]
+        #     }]
+        # }
+        # self.assertEqual(response.data, expected_data)
+
+        updated_tag_one = BookTag.objects.get(id=fiction_one.id)
+        self.assertEqual(updated_tag_one.tag_name, data["new_name"])
+        updated_tag_two = BookTag.objects.get(id=fiction_two.id)
+        self.assertEqual(updated_tag_two.tag_name, (data["new_name"]+"__fantasy"))
