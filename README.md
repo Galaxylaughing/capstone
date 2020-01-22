@@ -1,0 +1,572 @@
+# capstone-api
+
+# Project Overview
+
+This is the back-end of my capstone project, the details of which can be found [here](https://gist.github.com/Galaxylaughing/52fbe0aea39b01cd202cfce2dd982ae5). 
+The front-end can be found [here](https://github.com/Galaxylaughing/capstone-ios).
+
+# Installation
+
+## The Python Environment
+
+You should initiate a new environment for the project, using something like `python -m venv env` to create the environment and `source env/bin/activate` to start it. You can deactivate this environment with `deactivate`.
+
+## Dependencies
+
+The dependencies for this project are listed in `requirements.txt`. They are as follows:
+
+* asgiref==3.2.3
+* dj-database-url==0.5.0
+* Django==3.0.1
+* djangorestframework==3.11.0
+* gunicorn==20.0.4
+* psycopg2==2.8.4
+* python-dotenv==0.10.3
+* pytz==2019.3
+* sqlparse==0.3.0
+
+Additionally, this project uses python 3 and may not run as expected with python 2.
+
+You can install these with `$ pip install requirements.txt`.
+
+### Installing the Dependencies
+
+#### Django and Django REST Framework
+
+Inside the environment, you will need to install Django and the Djano REST Framework:
+
+* `$ pip install django`
+* `$ pip install djangorestframework`
+
+#### The .env File
+
+Run `$ pip install python-dotenv`. The package details are [here](https://pypi.org/project/python-dotenv/). A brief description of its use is [here](https://preslav.me/2019/01/09/dotenv-files-python/).
+
+Add a .env file to your root directory and include the following keys:
+
+```
+SECRET_KEY=<secret_key>
+
+DATABASE_NAME=<database_name>
+DATABASE_USER=<username>
+DATABASE_PASS=<password>
+
+ENVIRONMENT=PROD # or TEST if not in production
+```
+
+See the section on PostgresQL for information about the `DATABASE_...` keys.
+
+Once you have dotenv installed, add these lines to the top of the project (booktracker)'s `settings.py` file:
+
+```
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+Rememebr to add the .env file to your .gitignore.
+
+#### PostgresQL
+
+If you wish to run this app with a local database, you will also need set up Django to run with PostgresQL.
+
+##### The PostgresQL Database Adapter
+
+You will need to install the PostgresQL database adapter, psycopg2, using:
+* `$ pip install psycopg2`
+
+If this fails, you may need to run `$ export LIBRARY_PATH=/usr/local/Cellar/openssl/1.0.2s/lib` and run `pip install psycopg2` again.
+
+##### The PostgresQL Database
+
+Then, you need a database. You can use `$ createdb <database_name>` or the psql command line shell. 
+If you get an error like `psql: FATAL:  database "<username>" does not exist`, run `$ createdb`.
+
+Once the database exists, open the psql shell with `$ psql`, select the newly-created database with `\c <database_name>`, and execute these commands:
+* `CREATE ROLE <username> WITH LOGIN PASSWORD '<password>';`
+* `GRANT ALL PRIVILEGES ON DATABASE <database_name> TO <username>;`
+* `ALTER USER <uername> CREATEDB;`
+
+Remember to add your username, password, and database name to your .env file.
+
+##### Django's Connection to the PostgresQL Database
+
+Inside the project (booktracker)'s `settings.py` file, you will see a section like so:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("DATABASE_NAME"),
+        'USER': os.environ.get("DATABASE_USER"),
+        'PASSWORD': os.environ.get("DATABASE_USER"),
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
+}
+```
+
+If your .env file is set up, you have nothing more to do. Otherwise, enter your database name, username, and password here.
+
+#### Other dependencies.
+
+* [gunicorn](https://pypi.org/project/gunicorn/) can be installed with `$ pip install gunicorn`.
+* [dj-database-url](https://pypi.org/project/dj-database-url/) can be installed with `$ pip install dj-database-url`.
+
+If any other of the packages listed in requirements.txt were not installed when you installed Django and the Django REST Framework, go ahead and install them similarly.
+
+### Migrations
+
+You will need to remember to run the migrations.
+
+* check migrations
+  * `$ python manage.py check`
+  * `$ python manage.py showmigrations`
+* run migrations
+  * `$ python manage.py migrate`
+
+### Linting Errors in VSCode
+
+If you use VSCode and your linter insists you have unresolved imports, you may need to add:
+
+```json
+{
+    "python.pythonPath": "/path/to/your/venv/bin/python",
+}
+```
+
+to your VSCode workplace settings, as per [this stackoverflow answer](https://stackoverflow.com/questions/53939751/pylint-unresolved-import-error-in-visual-studio-code).
+
+# Running the API
+
+This API is deployed to Heroku [here](booktrackerapi.herokuapp.com/). 
+There is no root path url set up, so you should see a "Not Found" page at this link. 
+The endpoints for the API and their use are described below in the section "Using the API".
+
+To run the API off your local database, set up above, 
+you can use the command `$ manage.py runserver` or `$ python manage.py runserver`.
+
+This command optionally takes a url to run on. To run on your local wifi, if you are working on a Mac, click on the wifi icon in your nav bar and click "Open Network Preferences" (the last menu choice). This should open System Preferences to your Network prefences.
+
+If you are connected to wifi, you will see a section "status: Connected" followed by a details about the network you are currently connected to, such as:
+
+```
+Wi-Fi is connected to ada-seattle and has the IP address 172.24.48.78.
+```
+
+Copy this IP address and append `<IP_address>:8000` to the `runserver` command, like so: `$ manage.py runserver 172.24.48.78:8000`. This will run the API locally at this address. 
+
+Running the API on your local wifi will allow you to run the [LibAwesome](https://github.com/Galaxylaughing/capstone-ios) iOS app on your physical iOS device and still connect to your local database. Otherwise, you can only run the local database through the simulator on your MacOS machine.
+
+In order to complete this local-database-wifi setup, you must add the address your constructed to the XCode project. You can refer to the more verbose instructions in the [LibAwesome](https://github.com/Galaxylaughing/capstone-ios) README or the more concise instructions here:
+
+* open the XCode project
+* open the Constants.swift file
+* You will see a section with the title "API URLS". One of these looks like this: `let API_HOST = "https://booktrackerapi.herokuapp.com/"`. Comment out this line and add `let API_HOST = "http://<your_IP_address>:8000/"` instead. Comment out your added line and un-comment the original to switch back to using Heroku.
+
+# Using the API
+
+The booktracker API offers the following endpoints:
+
+| endpoint              | HTTP method       | app      | associated view method |
+| --------------------- | ----------------- | -------- | ---------------------- |
+| `helloworld/`         | GET               | userauth | views.helloworld       |
+| `signup/`             | POST              | userauth | views.signup           |
+| `auth-token/`         | --                | userauth | --                     |
+| `books/`              | GET, POST         | api      | views.books            |
+| `books/<book_id>/`    | GET, PUT, DELETE  | api      | views.book             |
+| `series/`             | GET, POST         | api      | views.all_series       |
+| `series/<series_id>/` | PUT, DELETE       | api      | views.one_series       |
+| `tags/`               | GET               | api      | views.tags             |
+| `tags/<tag_name>/`    | PUT, DELETE       | api      | views.tag              |
+| `status/<id>/`        | GET, POST, DELETE | api      | views.bookstatus       |
+| `rating/<book_id>/`   | PUT               | api      | views.rating           |
+
+Bear in mind, every endpoint requires a final slash. 
+In other words, `books/<book_id>/` will work but `books/book_id` will not.
+
+## Token Authentication and the `signup` and `auth-token` endpoints
+
+With the exception of the `helloworld/` endpoint and the `signup/` endpoint, all of the API's endpoints require token authentication. This section will describe the associated endpoints and how the authentication flow works.
+
+### `signup/`
+
+To obtain a token, a user needs to use the signup/ endpoint to create a User instance in the database. 
+This endpoint takes a JSON hash with two keys, a username and a password.
+
+```python
+{
+  'username': 'example username',
+  'password': 'example password'
+}
+```
+
+In the case of a successful response, the endpoint will return a response code of 201 CREATED and a hash of the username and generated user id.
+
+There are various error codes that may be returned in the case of an unsuccessful response:
+
+* 403 FORBIDDEN and the message 'Account already exists'
+  * when the username is already associated with a user.
+* 400 BAD REQUEST and the error message 'Error: username is missing or empty'
+  * when the username is blank or null.
+* 400 BAD REQUEST and the message 'Error: password is missing or empty'
+  * when the password is blank or null.
+* 400 BAD REQUEST and the message 'Errors: username is missing or empty, password is missing or empty'
+  * when both username and password are blank or null.
+
+### `auth-token/`
+
+This endpoint takes a username and password, like the signup/ endpoint. 
+Instead of creating a User, this endpoint assigns them a token, which it returns if successful.
+
+This endpoint is thus effectively the login endpoint. 
+The token can be cached for the duration of a customer's session and deleted when they logout. 
+This API does not have a dedicated logout/ url; 
+the service using this API must delete the cached token to simulate logging out. 
+
+Once the user has recieved a token, it can be passed in to the authenticated API endpoints. This is done by adding a header field with the key `Authorization` and the value `Token <token>`. The word "Token" followed by a space (followed by the recieved token) is required.
+
+## `books/` endpoint
+
+This endpoint can be accessed with two methods, GET and POST.
+
+### GET `books/`
+
+This endpoint takes a user's token and returns a list of book instances associated with that user.
+
+#### Success
+
+This data is returned in the following format:
+
+```json
+{
+  "books": [
+    {
+      "id": "<id>",
+      "title": "<title>",
+      "authors": [
+          "<author_name>",
+          "<author_name>"
+      ],
+      //...
+    },
+    {
+      //...
+    }
+  ]
+}
+```
+
+A valid book will always have at least this information. Books may additionally have:
+
+* 'series' (the ID of a series instance in the database), Integer,
+* 'position_in_series', Integer,
+* 'publisher', String,
+* 'publication_date', String,
+* 'isbn_10', String,
+* 'isbn_13', String,
+* 'page_count', Integer,
+* 'description', String,
+* 'rating', Integer,
+* 'current_status', (the code associated with a Status enum), String,
+* 'current_status_date', Datetime,
+* 'tags', Array of Strings
+
+This endpoint will return:
+
+```json
+{
+  "books": [] 
+}
+```
+
+if there are no books associated with the given user.
+
+If given authors that don't yet exist, this operation will create new author instances.
+
+#### Failure
+
+If no token is given, the endpoint will return 401 UNAUTHORIZED.
+
+### POST `books/`
+
+This endpoint takes a user's token and a JSON hash of all the data necessary to create a book instance in the database.
+
+At minimum, the endpoint requires a title and an array of author names.
+
+```json
+{
+  "title": "<title>",
+  "authors": [
+    "<author_name>"
+  ]
+}
+```
+
+The endpoint can also be given:
+
+* key: "tags", value: array of strings representing tag names,
+* key: "series", value: integer representing the id of an existing series,
+* key: "position_in_series", value: integer representing the position in the series the this book holds,
+* key: "publisher", value: a String representing the name of the publishing company,
+* key: "publication_date", value: a String representing the date of the publication,
+* key: "isbn_10", value: a String representing an ISBN-10,
+* key: "isbn_13", value: a String representing an ISBN-13,
+* key: "page_count", value: an Integer
+* key: "description", value: a String
+
+#### Success
+
+If successful, the endpoint will return a status code of 201 CREATED and the serializeddata of the book it created:
+
+```json
+{
+  "books": [
+    {
+      // book data
+    }
+  ]
+}
+```
+
+#### Failure
+
+* unauthorized requests will be given a 401 UNAUTHORIZED
+* a request without the required minimum of a title and at least one author will be given a 400 BAD REQUEST
+
+## `books/<book_id>/` endpoint
+
+This endpoint can be access with three methods, GET, PUT, or DELETE.
+
+### GET `books/<book_id>/`
+
+This endpoint takes the user's token and the ID of a book associated with that user and returns a serialization of that book's information.
+
+#### Success
+
+If successful, the endpoint returns something like the following:
+
+```json
+{
+    "book": {
+        "id": "<id>",
+        "title": "<title>",
+        "authors": [
+            "<author name>"
+        ],
+        "position_in_series": "<int>",
+        "series": "<int>",
+        "publisher": "<publisher>",
+        "publication_date": "<publication date>",
+        "isbn_10": "<isbn 10>",
+        "isbn_13": "<isbn 13>",
+        "page_count": "<int>",
+        "description": "<description>",
+        "current_status": "<status code>",
+        "current_status_date": "<date in the format %Y-%m-%dT%H:%M:%SZ>",
+        "rating": "<int from 0 through 5>",
+        "tags": [
+          "<tag name>"
+        ]
+    }
+}
+```
+
+The id, title, and authors fields will always be returned. The other fields are optional, and will be returned as a default value or as null.
+
+Refer to the status/ endpoint for details on what is meant by 'status_code'.
+
+#### Failure
+
+* 401 UNAUTHORIZED + "unauthorized"
+  * the book with that id belongs to a different user
+  * or a token was not provided
+* 400 BAD REQUEST + "No book found with the ID: <id>"
+  * no book exists with the provided id
+
+### PUT `books/<book_id>/`
+
+This endpoint takes a user's token and a book's ID. 
+It also takes a body with any parameter the user of the endpoint wishes to update as a key.
+
+For instance, the following would update only the title field and associated tags.
+
+```json
+{
+    "title": "<new_title>",
+    "tags": ["<tag>", "<tag>"]
+}
+```
+
+To unassociated a book from a series or to remove the book's position in series or its page count, pass in an empty string or a -1 for either or all of these values. For example:
+
+```json
+{
+    "series": -1,
+    "position_in_series": -1,
+    "page_count": -1
+}
+```
+
+This will set these values to null.
+
+#### Success
+
+If successful, the book's full data will be returned with the response code 200 OK.
+
+#### Failure
+
+* 401 UNAUTHORIZED
+  * a token was not provided
+* 400 BAD REQUEST
+  * no book exists with the given ID
+
+### DELETE `books/<book_id>/`
+
+This endpoint takes a user's token and a book ID and it deletes a book from the database. This operation is non-reversable.
+
+#### Success
+
+If successful, the endpoint will return the serialized data of the deleted book and the status code 200 OK.
+
+If an author's only book is deleted, this operation will delete that author instance as well.
+
+#### Failure
+
+* 400 BAD REQUEST
+  * with message "Could not find book with ID: <id>": no book found with the provided ID
+  * with message "Users can only delete their own books; book <book_id> belongs to user <user_id>": the book with the id provided belongs to another user
+
+## `series/` endpoint
+
+This endpoint can be accessed with two methods, GET and POST.
+
+### GET `series/`
+
+This endpoint takes the user's token returns all the series associated with that user.
+
+#### Success
+
+If successful, the endpoint will return a status of 200 OK and a serialization of the series information.
+
+```json
+{
+  "series": [
+    {
+      "id": "<series_id>",
+      "name": "<series_name>",
+      "planned_count": "<planned_count>",
+      "books": [
+        "<book_two_id>", 
+        "<book_one_id>"
+      ]
+    },
+    {
+      //...
+    }
+  ]
+}
+```
+
+A series does not necessarily have a planned_count or any books associated with it.
+
+##### Failure
+
+* 401 UNAUTHORIZED
+  * invalid or nonexistant token
+
+### POST `series/`
+
+This endpoint takes the user's token and a JSON hash of all the data necessary to create a new series: a name and a planned_count.
+
+```json
+{
+  "name": "<series name>",
+  "planned_count": "<int>"
+}
+```
+
+The planned_count key is required, but an empty string or a -1 can be given to set this field to null in the database.
+
+#### Success
+
+If successful, the endpoint will return a serialization of the newly created series and the status 201 CREATED.
+
+```json
+{
+  "series": [
+    {
+      "id": "<new_series_id>",
+      "name": "<series_name>",
+      "planned_count": "<series_count>",
+      "books": []
+    }
+  ]
+}
+```
+
+#### Failure
+
+* 401 UNAUTHORIZED
+  * invalid or nonexistant token
+* 400 BAD REQUEST + "Invalid series parameters"
+  * the endpoint was not given the required fields for creating a new series
+
+## `series/<series_id>/` endpoint
+
+This endpoint can be accessed with two methods, PUT and DELETE.
+
+### PUT `series/<series_id>/`
+
+This endpoint is simlar to the PUT books/<book_id>/ endpoint. This endpoint requires a token, a series id, and a JSON hash of what fields to modify on that series.
+
+It will return a 200 OK and the full data of the modified series if successful, a 401 UNAUTHORIZED if given an invalid token or no token, and 400 BAD REQUEST if given an invalid series ID.
+
+### DELETE `series/<series_id>/`
+
+This endpoint is simlar to the DELETE books/<book_id>/ endpoint. This endpoint requires a token and a series id and it deletes the given series from the database.
+
+If successful, it will return 200 OK and the serialized data of the deleted series. The endpoint will return 401 UNAUTHORIZED if given an invalid token or no token, and 400 BAD REQUEST if given an invalid series ID or an ID that does not match the user associated with the provided token.
+
+## `tags/` endpoint
+
+This endpoint can be accessed with one methods, GET.
+
+### GET `tags/`
+
+(description in progress; details to come)
+
+## `tags/<tag_name>/` endpoint
+
+This endpoint can be accessed with two methods, PUT and DELETE.
+
+### PUT `tags/<tag_name>/`
+
+(description in progress; details to come)
+
+### DELETE `tags/<tag_name>/`
+
+(description in progress; details to come)
+
+## `status/<id>/` endpoint
+
+This endpoint can be accessed with three methods, GET, POST, and DELETE.
+
+### GET `status/<id>/`
+
+(description in progress; details to come)
+
+### POST `status/<id>/`
+
+(description in progress; details to come)
+
+### DELETE `status/<id>/`
+
+(description in progress; details to come)
+
+## `rating/<book_id>/` endpoint
+
+This endpoint can be accessed with one methods, PUT.
+
+### PUT `rating/<book_id>/`
+
+(description in progress; details to come)
