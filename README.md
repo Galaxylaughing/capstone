@@ -204,14 +204,12 @@ In the case of a successful response, the endpoint will return a response code o
 
 There are various error codes that may be returned in the case of an unsuccessful response:
 
-* 403 FORBIDDEN and the message 'Account already exists'
-  * when the username is already associated with a user.
-* 400 BAD REQUEST and the error message 'Error: username is missing or empty'
-  * when the username is blank or null.
-* 400 BAD REQUEST and the message 'Error: password is missing or empty'
-  * when the password is blank or null.
-* 400 BAD REQUEST and the message 'Errors: username is missing or empty, password is missing or empty'
-  * when both username and password are blank or null.
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 403 FORBIDDEN | `Account already exists` | if the username is already associated with a user |
+| 400 BAD REQUEST | `Error: username is missing or empty` | if the username key is blank or null |
+|  | `Error: password is missing or empty` | if the password key is blank or null |
+|  | `Errors: username is missing or empty, password is missing or empty` | if both username and password are blank or null |
 
 ### `auth-token/`
 
@@ -316,7 +314,7 @@ The endpoint can also be given:
 
 #### Success
 
-If successful, the endpoint will return a status code of 201 CREATED and the serializeddata of the book it created:
+If successful, the endpoint will return a status code of 201 CREATED and the serialized data of the book it created:
 
 ```json
 {
@@ -330,8 +328,10 @@ If successful, the endpoint will return a status code of 201 CREATED and the ser
 
 #### Failure
 
-* unauthorized requests will be given a 401 UNAUTHORIZED
-* a request without the required minimum of a title and at least one author will be given a 400 BAD REQUEST
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | | if the endpoint was not given the required minimum of a title and at least one author |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ## `books/<book_id>/` endpoint
 
@@ -377,11 +377,10 @@ Refer to the status/ endpoint for details on what is meant by 'status_code'.
 
 #### Failure
 
-* 401 UNAUTHORIZED + "unauthorized"
-  * the book with that id belongs to a different user
-  * or a token was not provided
-* 400 BAD REQUEST + "No book found with the ID: <id>"
-  * no book exists with the provided id
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `No book found with the ID: <id>` | if no book exists with the provided ID |
+| 401 UNAUTHORIZED | `unauthorized` | if the book with the provided ID belongs to a different user or the user's token was invalid or missing. |
 
 ### PUT `books/<book_id>/`
 
@@ -415,10 +414,10 @@ If successful, the book's full data will be returned with the response code 200 
 
 #### Failure
 
-* 401 UNAUTHORIZED
-  * a token was not provided
-* 400 BAD REQUEST
-  * no book exists with the given ID
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Could not find book with ID: <id>` | if no book exists with the provided ID |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ### DELETE `books/<book_id>/`
 
@@ -432,9 +431,11 @@ If an author's only book is deleted, this operation will delete that author inst
 
 #### Failure
 
-* 400 BAD REQUEST
-  * with message "Could not find book with ID: <id>": no book found with the provided ID
-  * with message "Users can only delete their own books; book <book_id> belongs to user <user_id>": the book with the id provided belongs to another user
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Could not find book with ID: <id>` | if no book exists with the provided ID |
+|  | `Users can only delete their own books; book <book_id> belongs to user <user_id>"` | the book with the id provided belongs to another user |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ## `series/` endpoint
 
@@ -471,8 +472,9 @@ A series does not necessarily have a planned_count or any books associated with 
 
 ##### Failure
 
-* 401 UNAUTHORIZED
-  * invalid or nonexistant token
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ### POST `series/`
 
@@ -506,10 +508,10 @@ If successful, the endpoint will return a serialization of the newly created ser
 
 #### Failure
 
-* 401 UNAUTHORIZED
-  * invalid or nonexistant token
-* 400 BAD REQUEST + "Invalid series parameters"
-  * the endpoint was not given the required fields for creating a new series
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Invalid series parameters` | the endpoint was not given the required fields for creating a new series |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ## `series/<series_id>/` endpoint
 
@@ -560,7 +562,9 @@ If successful, the endpoint will return 200 OK and a "tags" key that has the val
 
 #### Failure
 
-If the token is invalid or missing, the endpoint will return 401 UNAUTHORIZED.
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ## `tags/<tag_name>/` endpoint
 
@@ -604,12 +608,12 @@ If successful, the endpoint will return 200 OK and the data of the updated tag, 
 
 #### Failure
 
-* 400 BAD REQUEST
-  * plus "new name or list of books was not provided" -- one of the required fields was not provided in the request body
-  * plus "No tags match the name '<tag_name>'" -- if the endpoint is given a tag name that does not exist
-  * plus "Could not find book with ID: '<id>'" -- if the endpoint was given a book id in the "books" field that could not be found in the database
-* 401 UNAUTHORIZED
-  * if the token is invalid or was not provided.
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `new name or list of books was not provided` | if one of the required fields was not provided in the request body |
+|  | `No tags match the name '<tag_name>'` | if the endpoint is given a tag name that does not exist |
+|  | `Could not find book with ID: '<id>'` | if the endpoint was given a book id in the "books" field that could not be found in the database |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 #### Nested Tags
 
@@ -644,10 +648,10 @@ For example:
 
 #### Failure
 
-* 401 UNAUTHORIZED
-  * if the user's token is missing or invalid
-* 400 BAD REQUEST
-  * plus "Could not find any tags matching the name '<tag_name>'" -- if given an nonexistant tag name
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Could not find any tags matching the name '<tag_name>'` | if given an nonexistant tag name |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ## `status/<id>/` endpoint
 
@@ -684,10 +688,10 @@ If successful, this endpoint returns 200 OK and a JSON hash listing all of the s
 
 #### Failure
 
-* 401 UNAUTHORIZED
-  * if the user's token is invalid or missing
-* 400 BAD REQUEST
-  * plus "Could not find book with ID: <id>" -- if the book with the provided ID does not exist or belongs to a different user than the one whose token was used to make the request
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Could not find book with ID: <id>` | if the book with the provided ID does not exist or belongs to a different user than the one whose token was used to make the request |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ### POST `status/<id>/`
 
@@ -733,14 +737,14 @@ If the newly-created status has a date that is more recent than the current_stat
 If the newly-created status has a date that is further in the past than the current_status_date on the associated book, the current_status and current_status_date fields on the book will not be altered.
 
 #### Failure
-
-* 400 BAD REQUEST
-  * plus "Invalid status parameters" -- the endpoint did not recieve both a "status_code and a "date" key in the body of the request,
-  * plus "Invalid status code" -- the status code given to the endpoint is not one of the 5 valid codes listed above,
-  * plus "“Date” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format." -- the format of the date string given to the endpoint was not compatible with the format expected by the database,
-  * plus "Could not find book with ID: <id>" -- if the book id given to the endpoint does not exist or is associated with a different user,
-* 401 UNAUTHORIZED
-  * if the user's token is invalid or missing
+    
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Invalid status parameters` | the endpoint did not recieve both a "status_code and a "date" key in the body of the request |
+|  | `Invalid status code` | the status code given to the endpoint is not one of the 5 valid codes listed above |
+|  | `“Date” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.` | the format of the date string given to the endpoint was not compatible with the format expected by the database |
+|  | `Could not find book with ID: <id>` | if the book id given to the endpoint does not exist or is associated with a different user |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ### DELETE `status/<id>/`
 
@@ -765,10 +769,10 @@ If the status that was deleted was older than the current_Status and current_sta
 
 #### Failure
 
-* 401 UNAUTHORIZED
-  * if the user's token was invalid or missing
-* 400 BAD REQUEST
-  * plus: "Could not find status with ID: <id>" -- if the status with the given ID does not exist in the database
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Could not find status with ID: <id>` | if the status with the given ID does not exist in the database |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
 
 ## `rating/<book_id>/` endpoint
 
@@ -792,9 +796,9 @@ If successful, the endpoint will return 200 OK and the full data of the associat
 
 #### Failure
 
-* 400 BAD REQUEST
-  * plus "Could not find book with ID: <id>" -- if the book with the given ID does not exist or belongs to a different user,
-  * plus "<value> is not a valid rating" -- if the value given for the "rating" key in the request body was noe an integer from 0 through 5,
-  * plus "New Rating Not Provided" -- if the "rating" key was not present in the request body,
-* 401 UNAUTHORIZED
-  * if the user's token was invalid or missing.
+| code | error message | why you would get this failure |
+| ---- | ------------- | ------- |
+| 400 BAD REQUEST | `Could not find book with ID: <id>` | if the book with the given ID does not exist or belongs to a different user |
+| | `<value> is not a valid rating` | if the value given for the "rating" key in the request body was noe an integer from 0 through 5 |
+| | `New Rating Not Provided` | if the "rating" key was not present in the request body |
+| 401 UNAUTHORIZED | | if the user's token was invalid or missing. |
