@@ -138,7 +138,7 @@ to your VSCode workplace settings, as per [this stackoverflow answer](https://st
 
 # Running the API
 
-This API is deployed to Heroku [here](booktrackerapi.herokuapp.com/). 
+This API is deployed to Heroku [here](https://booktrackerapi.herokuapp.com/). 
 There is no root path url set up, so you should see a "Not Found" page at this link. 
 The endpoints for the API and their use are described below in the section "Using the API".
 
